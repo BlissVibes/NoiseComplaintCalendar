@@ -128,12 +128,34 @@ Anything falling back to a Drive date is labelled "Drive upload date" on the
 incident card with an amber warning, so you are never presenting an upload
 time as if it were an incident time.
 
+### Time zones
+
+Incident times are **shown exactly as recorded**, in the record's own zone, and
+do not shift based on where the page is opened from. A recording stamped
+10:56 PM reads 10:56 PM whether the viewer is in Sherman Oaks or Tokyo. This
+matters because a landlord, HOA, or city office may open the link from
+anywhere, and a time that drifts turns a 10:56 PM violation into a lawful
+2:56 PM afternoon on the wrong date.
+
+Filename and EXIF timestamps carry no zone at all — they are the literal digits
+the camera wrote — so they are used verbatim. The only values that need a zone
+are Drive's upload/modified dates, which are absolute UTC instants; those are
+converted once into `recordTimeZone` in `js/config.js` (default
+`America/Los_Angeles`) and pinned there. Daylight saving is handled, so a
+January incident resolves against PST and a June one against PDT.
+
+The zone in use is stated in the page footer.
+
 To correct a single entry by hand, add `timestampOverride` to it in
 `data/incidents.json`:
 
 ```json
 { "id": "1AbC...", "name": "clip.mp4", "timestampOverride": "2025-05-23T22:56:00" }
 ```
+
+Write the override without a `Z` or offset and it is taken as a literal
+wall-clock reading. Add one (`...22:56:00Z`) and it is treated as an absolute
+instant and converted into `recordTimeZone`.
 
 You can also add a `"note"` to any entry and it will show on the card.
 
@@ -177,4 +199,4 @@ v2_plan.md                       everything deferred to the multi-user version
 ## Note
 
 This page is a factual record of file timestamps. It is not legal advice.
-Times display in the viewing device's local time zone.
+Times display exactly as recorded, in the record's own time zone.

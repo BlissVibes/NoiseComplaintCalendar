@@ -9,12 +9,29 @@
  *
  * So we try sources in order of how trustworthy they are, and we always
  * record which one won so the UI can show it.
+ *
+ * TIME ZONES
+ * Every incident time here is a *wall clock* reading — the literal digits the
+ * camera wrote down — and is never re-interpreted for whoever is viewing the
+ * page. A recording stamped 22:56 reads 22:56 in Los Angeles, in New York, and
+ * in Tokyo.
+ *
+ * Filenames and EXIF already carry wall-clock digits with no zone attached, so
+ * those are taken verbatim. Drive's createdTime/modifiedTime are the exception:
+ * they are absolute UTC instants, so they get converted once into the record's
+ * declared zone (config.recordTimeZone) and pinned there. Without that step the
+ * viewer's own location decides the answer, and a 10:56 PM violation renders as
+ * a lawful 2:56 PM the next afternoon for a reader in another country.
  */
 (function (global) {
   'use strict';
 
   var MIN_YEAR = 2000;
   var MAX_YEAR = 2100;
+
+  /* Used when no zone is supplied. Only ever applies to Drive's UTC
+   * timestamps; filename and EXIF readings never need a zone. */
+  var DEFAULT_ZONE = 'America/Los_Angeles';
 
   /* Named filename patterns, tried in order. Each returns a parts object.
    * Anchored loosely because real filenames carry prefixes and suffixes:
@@ -99,6 +116,33 @@
     return d;
   }
 
+  /* Wall-clock components for an absolute instant, as read in `timeZone`.
+   * Intl does the DST arithmetic, so this is correct year-round. */
+  function partsInZone(date, timeZone) {
+    var fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: timeZone,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false,
+    });
+    var got = {};
+    fmt.formatToParts(date).forEach(function (part) {
+      if (part.type !== 'literal') got[part.type] = part.value;
+    });
+    return parts(
+      got.year, got.month, got.day,
+      // Some engines report midnight as hour 24.
+      got.hour === '24' ? '0' : got.hour,
+      got.minute, got.second
+    );
+  }
+
+  /* True for strings that pin themselves to a zone ("...Z", "+02:00"). Bare
+   * datetimes are wall-clock readings and must be taken as written. */
+  function carriesZone(value) {
+    return /(?:Z|[+-]\d{2}:?\d{2})$/.test(String(value).trim());
+  }
+
   /**
    * Pull a capture time out of a filename.
    * @returns {{date: Date, pattern: string, dateOnly: boolean}|null}
@@ -131,10 +175,26 @@
     return toDate(p);
   }
 
-  function fromISO(value) {
+  /* Turn a stored date string into a wall-clock Date in the record's zone.
+   * A zone-carrying string (Drive's UTC instants) is converted once, here.
+   * A bare datetime is already a wall-clock reading and is used as written. */
+  function fromISO(value, timeZone) {
     if (!value) return null;
-    var d = new Date(value);
-    return isNaN(d.getTime()) ? null : d;
+
+    if (!carriesZone(value)) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?/
+        .exec(String(value).trim());
+      if (m) {
+        var bare = parts(m[1], m[2], m[3], m[4], m[5], m[6]);
+        return isPlausible(bare) ? toDate(bare) : null;
+      }
+    }
+
+    var instant = new Date(value);
+    if (isNaN(instant.getTime())) return null;
+
+    var p = partsInZone(instant, timeZone || DEFAULT_ZONE);
+    return isPlausible(p) ? toDate(p) : null;
   }
 
   /* Human-readable provenance, surfaced in the UI next to each incident. */
@@ -158,12 +218,14 @@
       label: 'Drive upload date',
       confidence: 'low',
       note: 'No capture time in the filename, so this is when the file was ' +
-            'added to Drive — it may be later than the actual incident.',
+            'added to Drive, read in the record’s own time zone. It may be ' +
+            'later than the actual incident.',
     },
     driveModified: {
       label: 'Drive modified date',
       confidence: 'low',
-      note: 'Last-modified date from Drive; may be later than the incident.',
+      note: 'Last-modified date from Drive, read in the record’s own time ' +
+            'zone; may be later than the incident.',
     },
   };
 
@@ -174,13 +236,14 @@
    * @returns {{date: Date, source: string, confidence: string,
    *            label: string, note: string, dateOnly: boolean}|null}
    */
-  function resolve(file, priority) {
+  function resolve(file, priority, timeZone) {
     priority = priority || ['filename', 'media', 'driveCreated', 'driveModified'];
+    timeZone = timeZone || DEFAULT_ZONE;
 
     // An explicit override always wins — lets you hand-correct a bad guess in
     // data/incidents.json without touching any code.
     if (file.timestampOverride) {
-      var forced = fromISO(file.timestampOverride);
+      var forced = fromISO(file.timestampOverride, timeZone);
       if (forced) {
         return decorate(forced, 'manual', false, {
           label: 'Manually set',
@@ -203,12 +266,12 @@
         var med = fromMediaMetadata(file);
         if (med) return decorate(med, 'media', false, SOURCE_INFO.media);
       } else if (src === 'driveCreated') {
-        var created = fromISO(file.createdTime);
+        var created = fromISO(file.createdTime, timeZone);
         if (created) {
           return decorate(created, 'driveCreated', false, SOURCE_INFO.driveCreated);
         }
       } else if (src === 'driveModified') {
-        var mod = fromISO(file.modifiedTime);
+        var mod = fromISO(file.modifiedTime, timeZone);
         if (mod) {
           return decorate(mod, 'driveModified', false, SOURCE_INFO.driveModified);
         }
@@ -231,6 +294,9 @@
   global.NCCTimestamps = {
     resolve: resolve,
     fromFilename: fromFilename,
+    fromISO: fromISO,
+    partsInZone: partsInZone,
+    DEFAULT_ZONE: DEFAULT_ZONE,
     SOURCE_INFO: SOURCE_INFO,
   };
 })(window);

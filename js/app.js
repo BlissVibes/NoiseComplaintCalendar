@@ -92,6 +92,11 @@
     link.textContent = j.citation;
     dom.ordinance.appendChild(link);
     dom.ordinance.appendChild(document.createTextNode('.'));
+
+    $('timezone-note').textContent =
+      'Times are taken from the recordings’ own file metadata and are shown ' +
+      'exactly as recorded, in ' + I.describeTimeZone() + '. They do not ' +
+      'change based on where this page is opened from.';
   }
 
   function load() {

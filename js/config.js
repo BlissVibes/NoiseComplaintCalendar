@@ -61,6 +61,16 @@ window.NCC_CONFIG = {
    * 3. HOW THE TIMESTAMP IS DECIDED
    * ------------------------------------------------------------- */
 
+  // The time zone this record is kept in. Incident times are ALWAYS shown as
+  // recorded, in this zone, no matter where the page is opened from — a
+  // recording stamped 10:56 PM reads 10:56 PM in Los Angeles and in Tokyo.
+  //
+  // Filename and EXIF timestamps carry no zone and are used exactly as
+  // written, so this setting only affects files that fall back to Drive's
+  // upload/modified dates, which are absolute UTC instants. Any IANA zone
+  // name works, e.g. 'America/New_York'.
+  recordTimeZone: 'America/Los_Angeles',
+
   // Order in which we try to establish when an incident actually happened.
   // "filename" is first on purpose: uploading a video to Drive resets its
   // Drive creation date to the upload time, which destroys the real capture

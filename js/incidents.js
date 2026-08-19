@@ -54,6 +54,22 @@
     return h >= quiet.start && h < quiet.end;
   }
 
+  /* Friendly name for the record's zone, e.g. "America/Los_Angeles (PDT)". */
+  function describeTimeZone() {
+    var zone = cfg().recordTimeZone || 'America/Los_Angeles';
+    try {
+      var abbr = new Intl.DateTimeFormat('en-US', {
+        timeZone: zone,
+        timeZoneName: 'short',
+      }).formatToParts(new Date()).filter(function (p) {
+        return p.type === 'timeZoneName';
+      })[0];
+      return abbr ? zone + ' (' + abbr.value + ')' : zone;
+    } catch (e) {
+      return zone;
+    }
+  }
+
   function formatQuietWindow(quiet) {
     quiet = quiet || cfg().quietHours;
     return formatHour(quiet.start) + ' – ' + formatHour(quiet.end);
@@ -104,7 +120,8 @@
    */
   function build(raw) {
     var id = raw.id || extractDriveId(raw.link || raw.webViewLink || raw.url);
-    var resolved = global.NCCTimestamps.resolve(raw, cfg().timestampPriority);
+    var resolved = global.NCCTimestamps.resolve(
+      raw, cfg().timestampPriority, cfg().recordTimeZone);
     if (!resolved) return null;
 
     var date = resolved.date;
@@ -298,6 +315,7 @@
     groupByMonth: groupByMonth,
     isAfterHours: isAfterHours,
     formatQuietWindow: formatQuietWindow,
+    describeTimeZone: describeTimeZone,
     extractDriveId: extractDriveId,
     previewUrl: previewUrl,
     viewUrl: viewUrl,

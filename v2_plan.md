@@ -89,19 +89,25 @@ Noted during v1 and consciously skipped:
 - **Streak highlighting on the calendar** — outlining consecutive runs rather
   than only shading them.
 
-## 5. Time zones
+## 5. Time zones — resolved in v1
 
-v1 renders all times in the **viewing device's local time zone**, and parses
-filename timestamps as local time. For a single user in Sherman Oaks this is
-correct and invisible.
+Originally logged here as the highest-risk correctness gap; fixed rather than
+deferred, and recorded for context.
 
-It stops being correct the moment a record is shared across time zones: a
-landlord opening the page from another state sees every incident shifted, and
-an 11:40 PM violation can render as a lawful afternoon. **v2 must store an
-explicit IANA time zone per record** (e.g. `America/Los_Angeles`) and render in
-that zone regardless of viewer, with the zone shown in the footer.
+Incident times are wall-clock readings shown exactly as recorded, never
+re-interpreted for the viewer. Filename and EXIF timestamps carry no zone and
+are used verbatim. Drive's `createdTime`/`modifiedTime` are absolute UTC
+instants, so they are converted once into `config.recordTimeZone` (default
+`America/Los_Angeles`) and pinned there, with DST handled via `Intl`.
 
-This is the highest-risk correctness issue in the current design.
+Verified identical across America/Los_Angeles, America/New_York, UTC,
+Asia/Tokyo, and Australia/Sydney.
+
+**What v2 still needs:** `recordTimeZone` is one global config value. Per-record
+storage of an IANA zone is required once there are multiple accounts, and the
+jurisdiction picker (§6) should set it alongside the quiet-hours window. A
+record whose incidents genuinely span zones (someone who moved mid-record)
+would need per-incident zones, which is not worth building until it appears.
 
 ## 6. Jurisdictions
 
