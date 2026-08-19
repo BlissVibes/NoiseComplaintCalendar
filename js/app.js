@@ -9,6 +9,7 @@
   var cfg = global.NCC_CONFIG;
 
   var state = {
+    rawFiles: [],             // the records as loaded, for diffing against Drive
     incidents: [],
     days: {},
     months: [],
@@ -59,6 +60,19 @@
 
     renderHeading();
     renderOrdinance();
+    global.NCCSync.init({
+      getRaw: function () { return state.rawFiles; },
+      applyRaw: function (rawFiles) {
+        // No keepCursor: land on the month holding the newest recording,
+        // which is the whole reason for scanning.
+        var built = rebuild(rawFiles);
+        renderSubtitle('scanned from Drive just now, not yet committed',
+          built.skipped);
+        if (state.selectedDay && !state.days[state.selectedDay]) {
+          selectDay(null);
+        }
+      },
+    });
     Ui.renderLegend(dom.legend);
     load();
   }
@@ -99,25 +113,35 @@
       'change based on where this page is opened from.';
   }
 
+  /* Rebuild all derived state from a raw record list. */
+  function rebuild(rawFiles, opts) {
+    opts = opts || {};
+    state.rawFiles = rawFiles || [];
+    var built = I.buildAll(state.rawFiles);
+    state.incidents = built.incidents;
+    state.days = I.indexByDay(state.incidents);
+    state.months = I.groupByMonth(state.days);
+    state.stats = I.summarize(state.incidents, state.days);
+
+    // Open on the most recent month that actually has incidents.
+    if (state.incidents.length && !opts.keepCursor) {
+      var last = state.incidents[state.incidents.length - 1].date;
+      state.cursor = new Date(last.getFullYear(), last.getMonth(), 1);
+      if (state.months.length) state.openMonths[state.months[0].key] = true;
+    }
+
+    Ui.renderStats(dom.stats, state.stats, I.formatQuietWindow());
+    renderCalendar();
+    renderList();
+    return built;
+  }
+
   function load() {
     global.NCCData.load(cfg).then(function (result) {
-      var built = I.buildAll(result.files);
-      state.incidents = built.incidents;
-      state.days = I.indexByDay(state.incidents);
-      state.months = I.groupByMonth(state.days);
-      state.stats = I.summarize(state.incidents, state.days);
-
-      // Open on the most recent month that actually has incidents.
-      if (state.incidents.length) {
-        var last = state.incidents[state.incidents.length - 1].date;
-        state.cursor = new Date(last.getFullYear(), last.getMonth(), 1);
-        if (state.months.length) state.openMonths[state.months[0].key] = true;
-      }
-
-      renderSubtitle(result, built.skipped);
-      Ui.renderStats(dom.stats, state.stats, I.formatQuietWindow());
-      renderCalendar();
-      renderList();
+      var built = rebuild(result.files);
+      renderSubtitle(
+        result.source === 'sample' ? 'showing bundled sample data' : null,
+        built.skipped);
       Ui.renderEmptyDetail(dom.detail, state.stats);
     }).catch(function (err) {
       dom.subtitle.textContent = 'Could not load incidents: ' + err.message;
@@ -126,7 +150,7 @@
     });
   }
 
-  function renderSubtitle(result, skipped) {
+  function renderSubtitle(note, skipped) {
     var s = state.stats;
     if (!s.total) {
       dom.subtitle.textContent = 'No incidents found in the data source.';
@@ -135,10 +159,8 @@
     var text = s.total + ' recordings from ' +
       Ui.shortDate(s.firstDate) + ' ' + s.firstDate.getFullYear() + ' to ' +
       Ui.shortDate(s.lastDate) + ' ' + s.lastDate.getFullYear();
-    if (result.source === 'sample') {
-      text += '  ·  showing bundled sample data';
-    }
-    if (skipped.length) {
+    if (note) text += '  ·  ' + note;
+    if (skipped && skipped.length) {
       text += '  ·  ' + skipped.length + ' file(s) skipped, no usable date';
     }
     dom.subtitle.textContent = text;

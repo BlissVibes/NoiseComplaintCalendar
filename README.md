@@ -76,6 +76,32 @@ The script walks subfolders too, so a folder-per-month layout works fine.
 this script. That matters, because anything in client-side JavaScript is
 readable by everyone who visits.
 
+### Keeping it up to date as you add recordings
+
+Two ways, both driven by you rather than running on their own.
+
+**The "Check Drive" button on the page.** Click it, paste your API key once,
+and it scans the folder and lists everything not already on the calendar,
+showing the date it would read from each file so a bad filename is obvious
+before it goes anywhere. Then either:
+
+- *Show on calendar now* — merges them into the current view immediately.
+  This is temporary and only in your browser; a reload returns to the
+  committed data.
+- *Download incidents.json* — save it over `data/incidents.json` and commit.
+  That is what makes it permanent for everyone.
+
+The key is stored in your browser's localStorage, never in the page source, so
+visitors to the public URL cannot see or use it, and the panel does nothing for
+them. "Forget saved key" clears it.
+
+**The GitHub Action**, which needs no key in any browser. Add your key once at
+Settings → Secrets and variables → Actions as `DRIVE_API_KEY`, then hit
+Actions → "Update incidents from Drive" → Run workflow. It regenerates and
+commits `data/incidents.json` for you. It also runs weekly on Mondays; delete
+the `schedule:` block in `.github/workflows/update-incidents.yml` if you would
+rather it only ever run when you press the button.
+
 ### Option B — paste share links, no API key
 
 Make a text file with one recording per line, filename and share link
@@ -195,6 +221,8 @@ js/ui.js                         rendering
 js/app.js                        state and event wiring
 tools/fetch-drive-metadata.mjs   Drive folder  -> data/incidents.json
 tools/parse-drive-links.mjs      pasted links  -> data/incidents.json
+js/sync.js                       the in-page "Check Drive" scanner
+.github/workflows/               scheduled + manual Drive refresh
 data/sample-incidents.json       demo data
 TOKENS.md                        running tally of AI tokens spent building this
 v2_plan.md                       everything deferred to the multi-user version

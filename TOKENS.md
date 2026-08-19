@@ -3,7 +3,7 @@
 A running tally of how many AI tokens it has taken to build this site, because
 it is genuinely funny to know.
 
-**Running total: 177,385 tokens** across 4 sessions. Last updated 2026-08-19.
+**Running total: 200,385 tokens** across 5 sessions. Last updated 2026-08-19.
 
 | # | Date | Work | Tokens | Cumulative |
 | --- | --- | --- | --- | --- |
@@ -11,6 +11,7 @@ it is genuinely funny to know.
 | 2 | 2026-08-19 | Heat ramp recolour (yellow→orange→red→magenta→deep purple), configurable public title, v2_plan.md | 25,000 | 152,385 |
 | 3 | 2026-08-19 | Pin incident times to the record's own time zone so they never shift with the viewer | 16,000 | 168,385 |
 | 4 | 2026-08-19 | Show the raw scraped timestamp verbatim on each card and in the CSV | 9,000 | 177,385 |
+| 5 | 2026-08-19 | Drive rescan: in-page Check Drive button, GitHub Action, real folder ID wired in | 23,000 | 200,385 |
 
 ## How to add an entry
 

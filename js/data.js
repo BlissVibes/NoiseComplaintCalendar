@@ -46,7 +46,10 @@
           return res.json().then(function (json) {
             if (!res.ok) {
               var msg = (json.error && json.error.message) || ('HTTP ' + res.status);
-              throw new Error('Google Drive: ' + msg);
+              var err = new Error('Google Drive: ' + msg);
+              // Keep the status: callers translate it into what to actually fix.
+              err.status = res.status;
+              throw err;
             }
             return json;
           });

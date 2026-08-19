@@ -29,11 +29,18 @@ window.NCC_CONFIG = {
   //   node tools/fetch-drive-metadata.mjs            (reads Drive directly)
   dataUrl: 'data/incidents.json',
 
-  // OPTIONAL live mode. If you fill both of these in, the page queries the
-  // Drive API on load instead of reading dataUrl, so new uploads appear
-  // without regenerating anything. Leave blank for a public site — a key in
-  // client-side code is readable by anyone who views source.
-  driveFolderId: '',
+  // The Drive folder holding the recordings. A folder ID is not a secret —
+  // it is the same string that appears in the share link — so it is fine to
+  // commit. It pre-fills the "Check Drive" panel and is the default for the
+  // GitHub Action.
+  //
+  // driveApiKey is the secret, and is deliberately left empty. Filling BOTH
+  // switches the page into live mode, where it queries Drive on every load
+  // instead of reading dataUrl — convenient for a private copy, but on a
+  // public URL the key is readable by anyone who views source. Use the
+  // "Check Drive for new recordings" button instead: it keeps the key in
+  // your own browser only.
+  driveFolderId: '1cqwh37XHMl3SDeX8B_itFA4baokielha',
   driveApiKey: '',
 
   /* ---------------------------------------------------------------

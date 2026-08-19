@@ -1,0 +1,62 @@
+# Regenerates data/incidents.json from the Drive folder and commits it.
+#
+# Run it from the Actions tab ("Run workflow"), which is the button-press
+# version of this, or let the weekly schedule pick up new uploads on its own.
+#
+# One-time setup:
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#     Name:  DRIVE_API_KEY
+#     Value: your Google Drive API key
+#
+# The key lives in the secret store and never appears in the repo or on the
+# published page.
+
+name: Update incidents from Drive
+
+on:
+  workflow_dispatch:        # the manual "scan now" button
+  schedule:
+    - cron: '17 14 * * 1'   # Mondays, 14:17 UTC (~6-7am Los Angeles)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-incidents
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Scan the Drive folder
+        env:
+          DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
+          # Defaults to the folder in js/config.js; override with a repo
+          # variable named DRIVE_FOLDER_ID if the folder ever changes.
+          DRIVE_FOLDER_ID: ${{ vars.DRIVE_FOLDER_ID || '1cqwh37XHMl3SDeX8B_itFA4baokielha' }}
+        run: |
+          if [ -z "$DRIVE_API_KEY" ]; then
+            echo "::error::DRIVE_API_KEY secret is not set. See the comment at the top of this file."
+            exit 1
+          fi
+          node tools/fetch-drive-metadata.mjs
+
+      - name: Commit if anything changed
+        run: |
+          if git diff --quiet -- data/incidents.json; then
+            echo "No new recordings."
+            exit 0
+          fi
+          count=$(node -e "console.log(JSON.parse(require('fs').readFileSync('data/incidents.json')).files.length)")
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/incidents.json
+          git commit -m "Update incidents from Drive ($count recordings)"
+          git push
