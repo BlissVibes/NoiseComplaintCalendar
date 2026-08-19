@@ -282,7 +282,8 @@
     scale.appendChild(swatches);
     scale.appendChild(el('span', 'legend-label', 'More'));
     scale.appendChild(el('span', 'legend-note',
-      '— darker means more incidents that day, or on the days around it'));
+      '— yellow through orange and red to deep purple as incidents mount ' +
+      'up on a day, or on the days around it'));
     host.appendChild(scale);
 
     var night = el('div', 'legend-item');

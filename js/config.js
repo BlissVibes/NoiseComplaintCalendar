@@ -7,6 +7,19 @@
  */
 window.NCC_CONFIG = {
   /* ---------------------------------------------------------------
+   * 0. THE PUBLIC HEADING
+   * ------------------------------------------------------------- */
+
+  // Shown as the main heading and the browser tab title. Put whatever you
+  // want the public to know this record is about — property, unit, party.
+  // In v2 this becomes editable in the page itself, per account; for now
+  // it is this one line. See v2_plan.md.
+  siteTitle: '4632 Natick Park South — Noise Complaints against Apt 201',
+
+  // Small label sitting above the title. Set to '' to hide it.
+  siteEyebrow: 'Noise Incident Log',
+
+  /* ---------------------------------------------------------------
    * 1. WHERE THE DATA COMES FROM
    * ------------------------------------------------------------- */
 

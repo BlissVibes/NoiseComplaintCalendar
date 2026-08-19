@@ -57,9 +57,25 @@
       if (e.key === 'ArrowRight') step(1);
     });
 
+    renderHeading();
     renderOrdinance();
     Ui.renderLegend(dom.legend);
     load();
+  }
+
+  /* The public heading. One config line today; per-account and editable in
+   * the browser in v2 — see v2_plan.md. */
+  function renderHeading() {
+    var title = cfg.siteTitle || 'Noise Incident Log';
+    $('site-title').textContent = title;
+    document.title = title;
+
+    var eyebrow = $('eyebrow');
+    if (cfg.siteEyebrow) {
+      eyebrow.textContent = cfg.siteEyebrow;
+    } else {
+      eyebrow.remove();
+    }
   }
 
   function renderOrdinance() {

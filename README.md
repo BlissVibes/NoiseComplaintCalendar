@@ -10,9 +10,10 @@ hours.
 
 ## What it does
 
-- **Heat-mapped calendar** on the left. Days shade darker as incidents pile
-  up, and a day also darkens when its *neighbouring* days had incidents — so a
-  run of four consecutive nights reads as a solid block, not four separate dots.
+- **Heat-mapped calendar** on the left, running yellow → orange → red →
+  magenta → deep purple as incidents pile up. A day also escalates when its
+  *neighbouring* days had incidents, so a run of four consecutive nights reads
+  as one solid block rather than four separate dots.
 - **Time badges on every date**, visible before you click. `11:47p` tells you
   when it happened. Multiple incidents get multiple badges.
 - **After-hours badges glow red** and pulse. Those are incidents inside the
@@ -170,6 +171,7 @@ tools/fetch-drive-metadata.mjs   Drive folder  -> data/incidents.json
 tools/parse-drive-links.mjs      pasted links  -> data/incidents.json
 data/sample-incidents.json       demo data
 TOKENS.md                        running tally of AI tokens spent building this
+v2_plan.md                       everything deferred to the multi-user version
 ```
 
 ## Note
