@@ -392,6 +392,18 @@
     name.title = inc.name;
     foot.appendChild(name);
 
+    // The raw reading, shown verbatim so it can be checked against the file
+    // rather than taken on trust. This value never changes with the viewer.
+    var stamp = el('div', 'incident-stamp');
+    stamp.appendChild(el('span', 'stamp-key', 'Recorded'));
+    stamp.appendChild(el('span', 'stamp-value', inc.rawStamp));
+    if (inc.timeOrigin && inc.timeOrigin !== inc.rawStamp) {
+      var origin = el('span', 'stamp-origin', 'read from “' + inc.timeOrigin + '”');
+      origin.title = inc.timeNote || '';
+      stamp.appendChild(origin);
+    }
+    foot.appendChild(stamp);
+
     var facts = el('div', 'incident-facts');
     var bits = [];
     if (inc.durationMs) bits.push(duration(inc.durationMs) + ' long');
@@ -501,17 +513,19 @@
   /* ---------------- CSV export ---------------- */
 
   function toCSV(incidents) {
-    var header = ['Date', 'Day', 'Time', 'After hours', 'File name',
-      'Duration', 'Time source', 'Drive link'];
+    var header = ['Date', 'Day', 'Time', 'Recorded (raw)', 'After hours',
+      'File name', 'Duration', 'Time source', 'Read from', 'Drive link'];
     var rows = incidents.map(function (inc) {
       return [
         I.dayKey(inc.date),
         DAY_SHORT[inc.date.getDay()],
         inc.dateOnly ? '' : clockTime(inc.date),
+        inc.rawStamp,
         inc.afterHours ? 'YES' : 'no',
         inc.name,
         duration(inc.durationMs) || '',
         inc.timeLabel,
+        inc.timeOrigin || '',
         inc.viewUrl || '',
       ];
     });

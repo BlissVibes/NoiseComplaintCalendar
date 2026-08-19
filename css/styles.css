@@ -578,6 +578,36 @@ h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.02em; }
   white-space: nowrap;
 }
 
+.incident-stamp {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.stamp-key {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.stamp-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.stamp-origin {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+
 .incident-facts {
   margin-top: 4px;
   font-size: 11.5px;

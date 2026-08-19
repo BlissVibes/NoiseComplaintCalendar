@@ -144,7 +144,11 @@ converted once into `recordTimeZone` in `js/config.js` (default
 `America/Los_Angeles`) and pinned there. Daylight saving is handled, so a
 January incident resolves against PST and a June one against PDT.
 
-The zone in use is stated in the page footer.
+Every incident card shows its raw reading verbatim — `RECORDED 2025-07-12
+22:08:20`, alongside the exact text it was scraped from
+(`read from "20250712_220820"`) — so the displayed time can be checked against
+the file itself rather than taken on trust. That value is also a column in the
+CSV export. The zone in use is stated in the page footer.
 
 To correct a single entry by hand, add `timestampOverride` to it in
 `data/incidents.json`:

@@ -157,7 +157,12 @@
       if (!isPlausible(p)) continue;
       var date = toDate(p);
       if (!date) continue;
-      return { date: date, pattern: pat.name, dateOnly: !!pat.dateOnly };
+      return {
+        date: date,
+        pattern: pat.name,
+        dateOnly: !!pat.dateOnly,
+        matched: m[0],
+      };
     }
     return null;
   }
@@ -249,7 +254,7 @@
           label: 'Manually set',
           confidence: 'high',
           note: 'Timestamp entered by hand in the data file.',
-        });
+        }, String(file.timestampOverride));
       }
     }
 
@@ -260,27 +265,46 @@
         var hit = fromFilename(file.name);
         if (hit) {
           var key = hit.dateOnly ? 'filename-dateonly' : 'filename';
-          return decorate(hit.date, key, hit.dateOnly, SOURCE_INFO[key]);
+          return decorate(hit.date, key, hit.dateOnly, SOURCE_INFO[key],
+            hit.matched);
         }
       } else if (src === 'media') {
         var med = fromMediaMetadata(file);
-        if (med) return decorate(med, 'media', false, SOURCE_INFO.media);
+        if (med) {
+          return decorate(med, 'media', false, SOURCE_INFO.media,
+            file.imageMediaMetadata.time);
+        }
       } else if (src === 'driveCreated') {
         var created = fromISO(file.createdTime, timeZone);
         if (created) {
-          return decorate(created, 'driveCreated', false, SOURCE_INFO.driveCreated);
+          return decorate(created, 'driveCreated', false,
+            SOURCE_INFO.driveCreated, file.createdTime);
         }
       } else if (src === 'driveModified') {
         var mod = fromISO(file.modifiedTime, timeZone);
         if (mod) {
-          return decorate(mod, 'driveModified', false, SOURCE_INFO.driveModified);
+          return decorate(mod, 'driveModified', false,
+            SOURCE_INFO.driveModified, file.modifiedTime);
         }
       }
     }
     return null;
   }
 
-  function decorate(date, source, dateOnly, info) {
+  /* Two decimal pads so the raw stamp is fixed-width and sortable. */
+  function pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+  /* The literal wall-clock reading, formatted but not converted. This is what
+   * the page shows as "recorded", so a reader can check it against the file. */
+  function rawStamp(date, dateOnly) {
+    var day = date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' +
+      pad2(date.getDate());
+    if (dateOnly) return day;
+    return day + ' ' + pad2(date.getHours()) + ':' + pad2(date.getMinutes()) +
+      ':' + pad2(date.getSeconds());
+  }
+
+  function decorate(date, source, dateOnly, info, origin) {
     return {
       date: date,
       source: source,
@@ -288,6 +312,9 @@
       label: info.label,
       confidence: info.confidence,
       note: info.note,
+      // Exactly what is displayed, and exactly where it was read from.
+      raw: rawStamp(date, dateOnly),
+      origin: origin || null,
     };
   }
 

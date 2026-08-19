@@ -3,13 +3,14 @@
 A running tally of how many AI tokens it has taken to build this site, because
 it is genuinely funny to know.
 
-**Running total: 168,385 tokens** across 3 sessions. Last updated 2026-08-19.
+**Running total: 177,385 tokens** across 4 sessions. Last updated 2026-08-19.
 
 | # | Date | Work | Tokens | Cumulative |
 | --- | --- | --- | --- | --- |
 | 1 | 2026-08-19 | Initial build: calendar heat map, timestamp extraction, quiet-hours logic, video panel, month list, Drive tooling | 127,385 | 127,385 |
 | 2 | 2026-08-19 | Heat ramp recolour (yellow→orange→red→magenta→deep purple), configurable public title, v2_plan.md | 25,000 | 152,385 |
 | 3 | 2026-08-19 | Pin incident times to the record's own time zone so they never shift with the viewer | 16,000 | 168,385 |
+| 4 | 2026-08-19 | Show the raw scraped timestamp verbatim on each card and in the CSV | 9,000 | 177,385 |
 
 ## How to add an entry
 

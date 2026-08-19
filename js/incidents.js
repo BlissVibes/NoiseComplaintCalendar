@@ -136,6 +136,8 @@
       timeLabel: resolved.label,
       timeConfidence: resolved.confidence,
       timeNote: resolved.note,
+      rawStamp: resolved.raw,       // the literal reading, as displayed
+      timeOrigin: resolved.origin,  // the literal text it was read from
       dateOnly: resolved.dateOnly,
       afterHours: resolved.dateOnly ? false : isAfterHours(date),
       durationMs: raw.videoMediaMetadata && raw.videoMediaMetadata.durationMillis
