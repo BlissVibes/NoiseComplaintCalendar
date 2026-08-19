@@ -1,0 +1,339 @@
+{
+  "generatedAt": "2025-07-01T12:00:00Z",
+  "note": "Bundled demo data so the page demonstrates itself before you add your own. Replace data/incidents.json with your real export.",
+  "files": [
+    {
+      "name": "PXL_20250502_221417123.mp4",
+      "id": "SAMPLE0001_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40003733",
+      "videoMediaMetadata": {
+        "durationMillis": "22111"
+      }
+    },
+    {
+      "name": "PXL_20250503_234724123.mp4",
+      "id": "SAMPLE0002_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40007466",
+      "videoMediaMetadata": {
+        "durationMillis": "26222"
+      }
+    },
+    {
+      "name": "PXL_20250504_011231123.mp4",
+      "id": "SAMPLE0003_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40011199",
+      "videoMediaMetadata": {
+        "durationMillis": "30333"
+      }
+    },
+    {
+      "name": "PXL_20250504_223838123.mp4",
+      "id": "SAMPLE0004_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40014932",
+      "videoMediaMetadata": {
+        "durationMillis": "34444"
+      }
+    },
+    {
+      "name": "PXL_20250512_002445123.mp4",
+      "id": "SAMPLE0005_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40018665",
+      "videoMediaMetadata": {
+        "durationMillis": "38555"
+      }
+    },
+    {
+      "name": "PXL_20250517_210552123.mp4",
+      "id": "SAMPLE0006_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40022398",
+      "videoMediaMetadata": {
+        "durationMillis": "42666"
+      }
+    },
+    {
+      "name": "PXL_20250523_225659123.mp4",
+      "id": "SAMPLE0007_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40026131",
+      "videoMediaMetadata": {
+        "durationMillis": "46777"
+      }
+    },
+    {
+      "name": "PXL_20250523_234116123.mp4",
+      "id": "SAMPLE0008_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40029864",
+      "videoMediaMetadata": {
+        "durationMillis": "50888"
+      }
+    },
+    {
+      "name": "PXL_20250524_020723123.mp4",
+      "id": "SAMPLE0009_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40033597",
+      "videoMediaMetadata": {
+        "durationMillis": "54999"
+      }
+    },
+    {
+      "name": "PXL_20250524_231930123.mp4",
+      "id": "SAMPLE0010_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40037330",
+      "videoMediaMetadata": {
+        "durationMillis": "59110"
+      }
+    },
+    {
+      "name": "PXL_20250525_220237123.mp4",
+      "id": "SAMPLE0011_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40041063",
+      "videoMediaMetadata": {
+        "durationMillis": "63221"
+      }
+    },
+    {
+      "name": "PXL_20250527_013344123.mp4",
+      "id": "SAMPLE0012_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40044796",
+      "videoMediaMetadata": {
+        "durationMillis": "67332"
+      }
+    },
+    {
+      "name": "PXL_20250601_230851123.mp4",
+      "id": "SAMPLE0013_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40048529",
+      "videoMediaMetadata": {
+        "durationMillis": "71443"
+      }
+    },
+    {
+      "name": "PXL_20250602_224458123.mp4",
+      "id": "SAMPLE0014_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40052262",
+      "videoMediaMetadata": {
+        "durationMillis": "75554"
+      }
+    },
+    {
+      "name": "PXL_20250608_142215123.mp4",
+      "id": "SAMPLE0015_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40055995",
+      "videoMediaMetadata": {
+        "durationMillis": "79665"
+      }
+    },
+    {
+      "name": "PXL_20250614_235522123.mp4",
+      "id": "SAMPLE0016_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40059728",
+      "videoMediaMetadata": {
+        "durationMillis": "83776"
+      }
+    },
+    {
+      "name": "PXL_20250615_004729123.mp4",
+      "id": "SAMPLE0017_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40063461",
+      "videoMediaMetadata": {
+        "durationMillis": "87887"
+      }
+    },
+    {
+      "name": "PXL_20250615_223136123.mp4",
+      "id": "SAMPLE0018_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40067194",
+      "videoMediaMetadata": {
+        "durationMillis": "91998"
+      }
+    },
+    {
+      "name": "PXL_20250620_214743123.mp4",
+      "id": "SAMPLE0019_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40070927",
+      "videoMediaMetadata": {
+        "durationMillis": "96109"
+      }
+    },
+    {
+      "name": "PXL_20250627_230250123.mp4",
+      "id": "SAMPLE0020_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40074660",
+      "videoMediaMetadata": {
+        "durationMillis": "100220"
+      }
+    },
+    {
+      "name": "PXL_20250627_233857123.mp4",
+      "id": "SAMPLE0021_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40078393",
+      "videoMediaMetadata": {
+        "durationMillis": "104331"
+      }
+    },
+    {
+      "name": "PXL_20250628_001514123.mp4",
+      "id": "SAMPLE0022_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40082126",
+      "videoMediaMetadata": {
+        "durationMillis": "108442"
+      }
+    },
+    {
+      "name": "PXL_20250628_014421123.mp4",
+      "id": "SAMPLE0023_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40085859",
+      "videoMediaMetadata": {
+        "durationMillis": "20553"
+      }
+    },
+    {
+      "name": "PXL_20250628_225028123.mp4",
+      "id": "SAMPLE0024_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40089592",
+      "videoMediaMetadata": {
+        "durationMillis": "24664"
+      }
+    },
+    {
+      "name": "PXL_20250629_232635123.mp4",
+      "id": "SAMPLE0025_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40093325",
+      "videoMediaMetadata": {
+        "durationMillis": "28775"
+      }
+    },
+    {
+      "name": "PXL_20250704_003842123.mp4",
+      "id": "SAMPLE0026_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40097058",
+      "videoMediaMetadata": {
+        "durationMillis": "32886"
+      }
+    },
+    {
+      "name": "PXL_20250704_221949123.mp4",
+      "id": "SAMPLE0027_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40100791",
+      "videoMediaMetadata": {
+        "durationMillis": "36997"
+      }
+    },
+    {
+      "name": "PXL_20250710_154056123.mp4",
+      "id": "SAMPLE0028_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40104524",
+      "videoMediaMetadata": {
+        "durationMillis": "41108"
+      }
+    },
+    {
+      "name": "PXL_20250711_233313123.mp4",
+      "id": "SAMPLE0029_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40108257",
+      "videoMediaMetadata": {
+        "durationMillis": "45219"
+      }
+    },
+    {
+      "name": "PXL_20250712_220820123.mp4",
+      "id": "SAMPLE0030_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40111990",
+      "videoMediaMetadata": {
+        "durationMillis": "49330"
+      }
+    },
+    {
+      "name": "PXL_20250712_235227123.mp4",
+      "id": "SAMPLE0031_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40115723",
+      "videoMediaMetadata": {
+        "durationMillis": "53441"
+      }
+    },
+    {
+      "name": "PXL_20250714_010534123.mp4",
+      "id": "SAMPLE0032_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40119456",
+      "videoMediaMetadata": {
+        "durationMillis": "57552"
+      }
+    },
+    {
+      "name": "PXL_20250714_234741123.mp4",
+      "id": "SAMPLE0033_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40123189",
+      "videoMediaMetadata": {
+        "durationMillis": "61663"
+      }
+    },
+    {
+      "name": "PXL_20250719_222648123.mp4",
+      "id": "SAMPLE0034_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40126922",
+      "videoMediaMetadata": {
+        "durationMillis": "65774"
+      }
+    },
+    {
+      "name": "PXL_20250725_231455123.mp4",
+      "id": "SAMPLE0035_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40130655",
+      "videoMediaMetadata": {
+        "durationMillis": "69885"
+      }
+    },
+    {
+      "name": "PXL_20250726_002912123.mp4",
+      "id": "SAMPLE0036_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40134388",
+      "videoMediaMetadata": {
+        "durationMillis": "73996"
+      }
+    },
+    {
+      "name": "PXL_20250726_224119123.mp4",
+      "id": "SAMPLE0037_notarealdriveid",
+      "mimeType": "video/mp4",
+      "size": "40138121",
+      "videoMediaMetadata": {
+        "durationMillis": "78107"
+      }
+    }
+  ]
+}
