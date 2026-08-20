@@ -286,6 +286,15 @@
       'up on a day, or on the days around it'));
     host.appendChild(scale);
 
+    // A miniature calendar cell, so the red rim in the legend is literally the
+    // same thing the calendar draws.
+    var glow = el('div', 'legend-item');
+    var swatch = el('span', 'swatch level-3 cell-afterhours legend-glow');
+    glow.appendChild(swatch);
+    glow.appendChild(el('span', 'legend-note',
+      'red glow — this day had at least one incident during quiet hours'));
+    host.appendChild(glow);
+
     var night = el('div', 'legend-item');
     var demo = el('span', 'badge badge-night', '11:20p');
     night.appendChild(demo);

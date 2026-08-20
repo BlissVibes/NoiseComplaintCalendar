@@ -32,6 +32,7 @@
  *   node tools/scan-drive-folder.mjs --keep-untrusted    # include discards
  *   node tools/scan-drive-folder.mjs --key <API_KEY>     # list via Drive API
  *   node tools/scan-drive-folder.mjs --method public     # force either mode
+ *   node tools/scan-drive-folder.mjs --forget-exclusions # un-suppress deletions
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -89,6 +90,41 @@ const BIG_RANGE = 16_000_000; // retry span when moov sits further in
 if (!folderIds.length) {
   console.error('No folder. Pass --folder <ID or URL>, or set driveFolderId in js/config.js.');
   process.exit(1);
+}
+
+const excludePath = resolve(ROOT, 'data/excluded.json');
+
+/* ---------- 0. deletions, remembered ----------
+ *
+ * Deleting a recording from Drive has to stick. It would otherwise come back
+ * on the next scan whenever a second folder still holds a copy of it, which
+ * is exactly the case here: the same clip lives in both the current folder
+ * and an older one under a different name and file ID.
+ *
+ * So a recording that was in the last scan and is no longer anywhere in Drive
+ * is recorded here by capture time, and suppressed from then on. Capture time
+ * rather than file ID, because the copies have different IDs.
+ *
+ * Run with --forget-exclusions to clear the list, e.g. after re-uploading
+ * something on purpose.
+ */
+function loadExclusions() {
+  if (flag('forget-exclusions')) return [];
+  try {
+    const parsed = JSON.parse(readFileSync(excludePath, 'utf8'));
+    return Array.isArray(parsed) ? parsed : parsed.excluded || [];
+  } catch {
+    return [];
+  }
+}
+
+function loadPrevious() {
+  try {
+    const parsed = JSON.parse(readFileSync(outPath, 'utf8'));
+    return parsed.files || [];
+  } catch {
+    return [];
+  }
 }
 
 /* ---------- 1. list the folder ---------- */
@@ -286,10 +322,36 @@ for (const id of folderIds) {
 const media = entries.filter((e) => MEDIA.test(e.name));
 console.log(`${entries.length} item(s), ${media.length} playable.\n`);
 
+const exclusions = loadExclusions();
+const excludedTimes = new Set(exclusions.map((e) => e.captureTime));
+
+/* Anything from the previous scan that is no longer in Drive was deleted. */
+const liveIds = new Set(entries.map((e) => e.id));
+const previous = loadPrevious();
+const removed = previous.filter((f) => !liveIds.has(f.id));
+for (const f of removed) {
+  if (excludedTimes.has(f.captureTime)) continue;
+  excludedTimes.add(f.captureTime);
+  exclusions.push({
+    captureTime: f.captureTime,
+    name: f.name,
+    noticedOn: new Date().toISOString().slice(0, 10),
+  });
+}
+if (removed.length) {
+  console.log(`${removed.length} recording(s) deleted from Drive since the last scan:`);
+  for (const f of removed) console.log(`  ${f.captureTime}  ${f.name}`);
+  console.log('They will stay out even if another folder still holds a copy.\n');
+}
+if (flag('forget-exclusions')) {
+  console.log('Exclusion list cleared (--forget-exclusions).\n');
+}
+
 const mismatches = [];
 
 const kept = [];
 const discarded = [];
+const suppressed = [];
 
 for (const entry of media) {
   process.stdout.write(`  ${entry.name.padEnd(20)} `);
@@ -315,6 +377,14 @@ for (const entry of media) {
     continue;
   }
 
+  // Checked before keeping, so a copy in another folder cannot bring back a
+  // recording that was deleted from Drive.
+  if (excludedTimes.has(verdict.captureTime)) {
+    suppressed.push({ name: entry.name, captureTime: verdict.captureTime });
+    console.log(`SUPPRESSED  deleted from Drive earlier`);
+    continue;
+  }
+
   kept.push({
     id: entry.id,
     name: entry.name,
@@ -328,6 +398,7 @@ for (const entry of media) {
     device: [meta.make, meta.model].filter(Boolean).join(' ') || null,
     location: meta.location || null,
   });
+
   const claimed = filenameDate(entry.name);
   if (claimed && claimed !== verdict.captureTime.slice(0, 16)) {
     mismatches.push({
@@ -415,6 +486,7 @@ writeFileSync(
       listing: method,
       mismatches,
       duplicates,
+      suppressed,
       files: flag('keep-untrusted') ? [...kept, ...discarded] : kept,
       discarded,
     },
@@ -447,4 +519,9 @@ if (discarded.length) {
     `${arg('out') || 'data/incidents.json'}.`
   );
 }
+writeFileSync(excludePath, JSON.stringify(exclusions, null, 2) + '\n');
+
 console.log(`\nWrote ${outPath}`);
+if (exclusions.length) {
+  console.log(`${exclusions.length} suppressed recording(s) listed in ${excludePath}`);
+}

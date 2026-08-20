@@ -3,7 +3,7 @@
 A running tally of how many AI tokens it has taken to build this site, because
 it is genuinely funny to know.
 
-**Running total: 306,385 tokens** across 9 sessions. Last updated 2026-08-20.
+**Running total: 343,385 tokens** across 10 sessions. Last updated 2026-08-20.
 
 | # | Date | Work | Tokens | Cumulative |
 | --- | --- | --- | --- | --- |
@@ -16,6 +16,7 @@ it is genuinely funny to know.
 | 7 | 2026-08-20 | New folder merged with old, filename/metadata cross-check, dedupe by capture time | 25,000 | 269,385 |
 | 8 | 2026-08-20 | Rescan: 41 incidents back to April, dedupe corrected to capture-second identity | 25,000 | 294,385 |
 | 9 | 2026-08-20 | Workflow uses the capture-time scanner; scanner supports keyless and API listing | 12,000 | 306,385 |
+| 10 | 2026-08-20 | Red glow on quiet-hours days in both calendar views; deletions now stick across folders | 37,000 | 343,385 |
 
 ## How to add an entry
 

@@ -16,8 +16,10 @@ hours.
   as one solid block rather than four separate dots.
 - **Time badges on every date**, visible before you click. `11:47p` tells you
   when it happened. Multiple incidents get multiple badges.
-- **After-hours badges glow red** and pulse. Those are incidents inside the
-  Los Angeles quiet-hours window.
+- **After-hours days glow red.** Any date with at least one incident inside
+  the Los Angeles quiet-hours window gets a red rim and halo, in both the month
+  and full-year views, so ordinance violations are findable at a glance without
+  reading a single time. The individual time badges glow too.
 - **Click any date** to load that day's recordings in the right pane. Two
   videos, three videos, ten — each gets its own player, labelled
   "Recording 2 of 3", in chronological order.
@@ -246,6 +248,17 @@ Every incident card shows its raw reading verbatim — `RECORDED 2025-07-12
 (`read from "20250712_220820"`) — so the displayed time can be checked against
 the file itself rather than taken on trust. That value is also a column in the
 CSV export. The zone in use is stated in the page footer.
+
+### Deleting a recording
+
+Delete it from Drive and re-run the scan. The scanner compares against the
+previous `data/incidents.json`, notices what is gone, and records it in
+`data/excluded.json` so it stays out permanently — including when a second
+folder still holds a copy of the same recording under a different name and
+file ID, which would otherwise bring it straight back on the next scan.
+
+Run `node tools/scan-drive-folder.mjs --forget-exclusions` to clear that list,
+for instance after deliberately re-uploading something.
 
 To correct a single entry by hand, add `timestampOverride` to it in
 `data/incidents.json`:

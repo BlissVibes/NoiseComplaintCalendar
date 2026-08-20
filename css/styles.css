@@ -277,9 +277,44 @@ h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.02em; }
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
   border-color: #4d5560;
 }
-.cell-hit.is-selected {
-  border-color: #fff;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+/* Any day with an incident inside quiet hours gets a red rim and glow, so the
+ * ordinance violations are findable at a glance across a whole month or year
+ * without reading a single time. The heat colour underneath still shows how
+ * many; this layer shows whether it was unlawful. */
+.cell-afterhours {
+  border-color: var(--night) !important;
+  box-shadow: 0 0 0 1px var(--night),
+              0 0 14px rgba(255, 77, 94, 0.75),
+              inset 0 0 12px rgba(255, 77, 94, 0.28);
+  animation: cellNightPulse 2.8s ease-in-out infinite;
+}
+
+.cell-hit.cell-afterhours:hover {
+  box-shadow: 0 0 0 1px var(--night),
+              0 0 20px rgba(255, 77, 94, 0.95),
+              inset 0 0 14px rgba(255, 77, 94, 0.35);
+}
+
+@keyframes cellNightPulse {
+  0%, 100% { box-shadow: 0 0 0 1px var(--night),
+                         0 0 10px rgba(255, 77, 94, 0.6),
+                         inset 0 0 10px rgba(255, 77, 94, 0.22); }
+  50%      { box-shadow: 0 0 0 1px var(--night),
+                         0 0 20px rgba(255, 77, 94, 1),
+                         inset 0 0 15px rgba(255, 77, 94, 0.38); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell-afterhours { animation: none; }
+}
+
+/* Selection still has to win over the glow, or you cannot tell what is open. */
+.cell-hit.is-selected,
+.cell-hit.cell-afterhours.is-selected {
+  border-color: #fff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.75),
+              0 0 16px rgba(255, 77, 94, 0.6);
+  animation: none;
 }
 
 .cell-num {
@@ -400,16 +435,27 @@ h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.02em; }
   color: rgba(255, 255, 255, 0.75);
 }
 
-.month-grid-compact .cell-afterhours::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--night);
-  box-shadow: 0 0 5px var(--night);
+/* Year view cells are ~20px, so the glow is tightened to stay readable at
+ * that size rather than bleeding into its neighbours. */
+.month-grid-compact .cell-afterhours {
+  box-shadow: 0 0 0 1px var(--night),
+              0 0 7px rgba(255, 77, 94, 0.9),
+              inset 0 0 5px rgba(255, 77, 94, 0.3);
+  animation: miniNightPulse 2.8s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes miniNightPulse {
+  0%, 100% { box-shadow: 0 0 0 1px var(--night),
+                         0 0 5px rgba(255, 77, 94, 0.7),
+                         inset 0 0 4px rgba(255, 77, 94, 0.25); }
+  50%      { box-shadow: 0 0 0 1px var(--night),
+                         0 0 10px rgba(255, 77, 94, 1),
+                         inset 0 0 7px rgba(255, 77, 94, 0.4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .month-grid-compact .cell-afterhours { animation: none; }
 }
 
 /* ---------------- legend ---------------- */
@@ -846,6 +892,11 @@ h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.02em; }
     border-color: #8b0000;
   }
   .cell { border-color: #ccc; }
+  .cell-afterhours {
+    border: 2px solid #8b0000 !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
   .level-1 { background: #fbeeb8 !important; }
   .level-2 { background: #f9b384 !important; }
   .level-3 { background: #f28b8b !important; }
@@ -981,3 +1032,6 @@ h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.02em; }
   color: #7ee787;
   user-select: all;
 }
+
+/* The legend's glow sample needs breathing room or its halo clips. */
+.legend-glow { margin: 3px 5px 3px 3px; }
