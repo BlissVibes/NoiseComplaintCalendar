@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noise Incident Log</title>
+<meta name="description" content="A dated, timestamped record of recurring noise disturbances.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d1117'/%3E%3Crect x='6' y='7' width='7' height='7' rx='1.5' fill='%237a441d'/%3E%3Crect x='15' y='7' width='7' height='7' rx='1.5' fill='%23d4741f'/%3E%3Crect x='6' y='17' width='7' height='7' rx='1.5' fill='%23f5922b'/%3E%3Crect x='15' y='17' width='7' height='7' rx='1.5' fill='%23ff4d5e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-title">
+    <p class="eyebrow" id="eyebrow"></p>
+    <h1 id="site-title">Noise Incident Log</h1>
+    <p class="subtitle" id="subtitle">Loading records…</p>
+  </div>
+  <div class="topbar-actions">
+    <button type="button" class="btn" id="btn-sync" title="Scan the Google Drive folder for recordings not yet on the calendar">Check Drive</button>
+    <button type="button" class="btn" id="btn-export" title="Download every incident as a CSV file">Export CSV</button>
+    <button type="button" class="btn" id="btn-print" title="Print or save as PDF">Print</button>
+  </div>
+</header>
+
+<!-- Owner-only: scan Drive for recordings not yet on the calendar. Does
+     nothing for visitors, who have no API key stored in their browser. -->
+<div class="sync-panel" id="sync-panel" hidden></div>
+
+<!-- Headline numbers: the pattern at a glance, before anyone clicks anything -->
+<section class="stats" id="stats" aria-label="Summary statistics"></section>
+
+<main class="layout">
+
+  <!-- LEFT: the calendar, readable from across the room -->
+  <section class="pane pane-calendar" aria-label="Incident calendar">
+    <div class="calendar-toolbar">
+      <div class="month-nav">
+        <button type="button" class="nav-btn" id="btn-prev" aria-label="Previous month">‹</button>
+        <h2 class="month-label" id="month-label">—</h2>
+        <button type="button" class="nav-btn" id="btn-next" aria-label="Next month">›</button>
+      </div>
+      <div class="view-toggle" role="group" aria-label="Calendar view">
+        <button type="button" class="toggle-btn is-active" id="btn-view-month">Month</button>
+        <button type="button" class="toggle-btn" id="btn-view-year">Full year</button>
+      </div>
+    </div>
+
+    <div id="calendar-host" class="calendar-host"></div>
+
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <!-- RIGHT: videos for the selected day, plus the full browsable list -->
+  <section class="pane pane-detail" aria-label="Incident details">
+    <div id="detail" class="detail"></div>
+
+    <div class="all-incidents">
+      <div class="all-incidents-head">
+        <h2>All incidents</h2>
+        <div class="all-incidents-actions">
+          <button type="button" class="link-btn" id="btn-expand-all">Expand all</button>
+          <span class="sep">·</span>
+          <button type="button" class="link-btn" id="btn-collapse-all">Collapse all</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <label class="checkbox">
+          <input type="checkbox" id="filter-afterhours">
+          <span>After-hours only</span>
+        </label>
+        <span class="filter-count" id="filter-count"></span>
+      </div>
+      <div id="month-list" class="month-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p id="ordinance-note"></p>
+  <p class="disclaimer" id="timezone-note"></p>
+  <p class="disclaimer">
+    This page is a factual record of file timestamps, not legal advice.
+  </p>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/timestamps.js"></script>
+<script src="js/incidents.js"></script>
+<script src="js/data.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

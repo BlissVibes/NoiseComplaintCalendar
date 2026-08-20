@@ -1,0 +1,108 @@
+/*
+ * config.js — all user-tunable settings.
+ *
+ * This site is intentionally a static, no-backend page: it reads a committed
+ * JSON file of incidents and embeds each video straight from its Google Drive
+ * share link. Nothing here needs a server, so it hosts fine on GitHub Pages.
+ */
+window.NCC_CONFIG = {
+  /* ---------------------------------------------------------------
+   * 0. THE PUBLIC HEADING
+   * ------------------------------------------------------------- */
+
+  // Shown as the main heading and the browser tab title. Put whatever you
+  // want the public to know this record is about — property, unit, party.
+  // In v2 this becomes editable in the page itself, per account; for now
+  // it is this one line. See v2_plan.md.
+  siteTitle: '4632 Natick Park South — Noise Complaints against Apt 201',
+
+  // Small label sitting above the title. Set to '' to hide it.
+  siteEyebrow: 'Noise Incident Log',
+
+  /* ---------------------------------------------------------------
+   * 1. WHERE THE DATA COMES FROM
+   * ------------------------------------------------------------- */
+
+  // The committed snapshot of your Drive folder. This is the normal path.
+  // Regenerate it with either script in tools/ and commit the result:
+  //   node tools/parse-drive-links.mjs links.txt     (zero setup)
+  //   node tools/fetch-drive-metadata.mjs            (reads Drive directly)
+  dataUrl: 'data/incidents.json',
+
+  // The Drive folder holding the recordings. A folder ID is not a secret —
+  // it is the same string that appears in the share link — so it is fine to
+  // commit. It pre-fills the "Check Drive" panel and is the default for the
+  // GitHub Action.
+  //
+  // driveApiKey is the secret, and is deliberately left empty. Filling BOTH
+  // switches the page into live mode, where it queries Drive on every load
+  // instead of reading dataUrl — convenient for a private copy, but on a
+  // public URL the key is readable by anyone who views source. Use the
+  // "Check Drive for new recordings" button instead: it keeps the key in
+  // your own browser only.
+  driveFolderId: '1cqwh37XHMl3SDeX8B_itFA4baokielha',
+  driveApiKey: '',
+
+  /* ---------------------------------------------------------------
+   * 2. WHAT COUNTS AS "AFTER HOURS"
+   * ------------------------------------------------------------- */
+
+  // Sherman Oaks is within the City of Los Angeles, so the LAMC applies.
+  // Quiet hours are 10:00 PM - 7:00 AM (not 8 AM).
+  //   LAMC 41.57  - loud and raucous noise prohibited
+  //   LAMC 116.01 - loud, unnecessary and unusual noise
+  //   LAMC 111.02 - presumed ambient 50 dBA (7a-10p) vs 40 dBA (10p-7a)
+  // Hours are on a 24-hour clock; the window wraps past midnight.
+  quietHours: {
+    start: 22, // 10:00 PM
+    end: 7,    //  7:00 AM
+  },
+
+  jurisdiction: {
+    name: 'Sherman Oaks, City of Los Angeles',
+    citation: 'LAMC §41.57, §116.01, §111.02',
+    url: 'https://codelibrary.amlegal.com/codes/los_angeles/latest/lamc/0-0-0-129184',
+  },
+
+  /* ---------------------------------------------------------------
+   * 3. HOW THE TIMESTAMP IS DECIDED
+   * ------------------------------------------------------------- */
+
+  // The time zone this record is kept in. Incident times are ALWAYS shown as
+  // recorded, in this zone, no matter where the page is opened from — a
+  // recording stamped 10:56 PM reads 10:56 PM in Los Angeles and in Tokyo.
+  //
+  // Filename and EXIF timestamps carry no zone and are used exactly as
+  // written, so this setting only affects files that fall back to Drive's
+  // upload/modified dates, which are absolute UTC instants. Any IANA zone
+  // name works, e.g. 'America/New_York'.
+  recordTimeZone: 'America/Los_Angeles',
+
+  // Order in which we try to establish when an incident actually happened.
+  // "filename" is first on purpose: uploading a video to Drive resets its
+  // Drive creation date to the upload time, which destroys the real capture
+  // time. Phone and camera filenames almost always preserve it.
+  // 'capture' is the camera's own recorded time, extracted from the video
+  // file by tools/scan-drive-folder.mjs. It is first because it is the only
+  // source that is both precise and immune to renaming or re-uploading.
+  timestampPriority: ['capture', 'filename', 'media', 'driveCreated', 'driveModified'],
+
+  /* ---------------------------------------------------------------
+   * 4. HEATMAP TUNING
+   * ------------------------------------------------------------- */
+
+  // A day's heat score is its own incident count plus a share of its
+  // neighbours', so clusters of consecutive nights read darker than isolated
+  // one-offs. Index 0 = same day, 1 = +/-1 day, 2 = +/-2 days.
+  clusterWeights: [1, 0.6, 0.25],
+
+  // Score thresholds for the five shading levels. A day with no incidents of
+  // its own is never shaded, no matter how loud its neighbours were.
+  heatThresholds: [1.5, 2.5, 4, 6],
+
+  // Time badges drawn in a calendar cell before the rest collapse to "+N".
+  maxBadgesPerDay: 3,
+
+  // 0 = weeks start Sunday, 1 = Monday.
+  weekStartsOn: 0,
+};
