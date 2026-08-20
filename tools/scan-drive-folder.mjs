@@ -258,22 +258,46 @@ function dedupeByCaptureTime(list) {
   const best = new Map();
   const dropped = [];
   for (const item of list) {
+    // Capture time to the second identifies a recording, because one camera
+    // cannot begin two recordings in the same second. (All of these come from
+    // a single iPhone; revisit this if a second device is ever added.)
+    //
+    // Byte size deliberately plays no part. The same clip re-uploaded is often
+    // re-encoded — 47 MB against 199 MB for one July 14 recording — while its
+    // duration stays put to within a millisecond. Matching on size would treat
+    // those as two separate incidents and double-count the night.
     const key = item.captureTime;
     const existing = best.get(key);
     if (!existing) {
       best.set(key, item);
       continue;
     }
-    const incomingChecked = !!filenameDate(item.name);
-    const existingChecked = !!filenameDate(existing.name);
-    if (incomingChecked && !existingChecked) {
-      best.set(key, item);
-      dropped.push({ name: existing.name, duplicateOf: item.name, at: key });
-    } else {
-      dropped.push({ name: item.name, duplicateOf: existing.name, at: key });
-    }
+    const winner = preferred(item, existing);
+    const loser = winner === item ? existing : item;
+    best.set(key, winner);
+    dropped.push({
+      name: loser.name,
+      duplicateOf: winner.name,
+      at: loser.captureTime,
+      droppedSize: loser.sizeBytes,
+      keptSize: winner.sizeBytes,
+    });
   }
   return { unique: [...best.values()], dropped };
+}
+
+/* Which copy of a duplicated recording to keep: one whose filename carries a
+ * date can be cross-checked, so it wins; failing that keep the longest, then
+ * the largest, since a trimmed or heavily compressed copy shows less of the
+ * incident. */
+function preferred(a, b) {
+  const aDated = !!filenameDate(a.name);
+  const bDated = !!filenameDate(b.name);
+  if (aDated !== bDated) return aDated ? a : b;
+  if ((a.durationMs || 0) !== (b.durationMs || 0)) {
+    return (a.durationMs || 0) > (b.durationMs || 0) ? a : b;
+  }
+  return (a.sizeBytes || 0) >= (b.sizeBytes || 0) ? a : b;
 }
 
 const { unique, dropped: duplicates } = dedupeByCaptureTime(kept);

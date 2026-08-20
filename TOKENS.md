@@ -3,7 +3,7 @@
 A running tally of how many AI tokens it has taken to build this site, because
 it is genuinely funny to know.
 
-**Running total: 269,385 tokens** across 7 sessions. Last updated 2026-08-20.
+**Running total: 294,385 tokens** across 8 sessions. Last updated 2026-08-20.
 
 | # | Date | Work | Tokens | Cumulative |
 | --- | --- | --- | --- | --- |
@@ -14,6 +14,7 @@ it is genuinely funny to know.
 | 5 | 2026-08-19 | Drive rescan: in-page Check Drive button, GitHub Action, real folder ID wired in | 23,000 | 200,385 |
 | 6 | 2026-08-20 | Real data: QuickTime capture-time extraction, keyless folder scanner, discard untrustworthy dates | 44,000 | 244,385 |
 | 7 | 2026-08-20 | New folder merged with old, filename/metadata cross-check, dedupe by capture time | 25,000 | 269,385 |
+| 8 | 2026-08-20 | Rescan: 41 incidents back to April, dedupe corrected to capture-second identity | 25,000 | 294,385 |
 
 ## How to add an entry
 
