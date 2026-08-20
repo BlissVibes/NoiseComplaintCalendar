@@ -204,6 +204,12 @@
 
   /* Human-readable provenance, surfaced in the UI next to each incident. */
   var SOURCE_INFO = {
+    capture: {
+      label: 'Camera metadata',
+      confidence: 'high',
+      note: 'Capture time recorded by the camera itself, in the local time ' +
+            'the device was set to when it recorded.',
+    },
     filename: {
       label: 'Filename',
       confidence: 'high',
@@ -261,7 +267,14 @@
     for (var i = 0; i < priority.length; i++) {
       var src = priority[i];
 
-      if (src === 'filename') {
+      if (src === 'capture') {
+        // A bare wall-clock string written by tools/scan-drive-folder.mjs.
+        // Taken verbatim; the offset is recorded but never applied, because
+        // the local reading is the thing that matters.
+        var cap = fromISO(file.captureTime, timeZone);
+        if (cap) return decorate(cap, 'capture', false, SOURCE_INFO.capture,
+          file.captureTime + (file.captureOffset ? ' ' + file.captureOffset : ''));
+      } else if (src === 'filename') {
         var hit = fromFilename(file.name);
         if (hit) {
           var key = hit.dateOnly ? 'filename-dateonly' : 'filename';

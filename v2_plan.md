@@ -149,6 +149,17 @@ All of it blocks a public launch.
 - **Playback depends on Drive sharing.** If the folder stops being
   link-shared, every embed goes blank with no warning on the page. A health
   check that flags unreachable files would be worth having.
+- **Capture time now comes from inside the file.** `tools/lib/qtmeta.mjs`
+  parses QuickTime/MP4 atoms for `com.apple.quicktime.creationdate`, which is
+  what makes iPhone recordings usable at all — `IMG_0477.MOV` has no date in
+  its name. v2's upload flow should read this at submission time and store it,
+  so the parsing only ever happens once. The same metadata also carries GPS
+  (`com.apple.quicktime.location.ISO6709`) and device model, which could
+  corroborate that recordings were made at the complainant's address.
+- **Converted files lose everything.** Re-encoding strips the capture time and
+  leaves only an mvhd date that the converter overwrote. v1 discards these. A
+  v2 upload flow should warn at upload time, while the user still has the
+  original.
 - **Filename formats.** `js/timestamps.js` handles Pixel, Android, iPhone,
   QuickTime, and Ring-style names. Anything unrecognised falls back to the
   Drive upload date and is flagged low-confidence in the UI. New camera

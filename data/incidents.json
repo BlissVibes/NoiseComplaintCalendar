@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-08-20T04:12:34.976Z",
+  "folderId": "1cqwh37XHMl3SDeX8B_itFA4baokielha",
+  "source": "quicktime-metadata",
+  "files": [
+    {
+      "id": "1-9erQ8hc0HPWFdLOqhAYfkm4mrxYj7RI",
+      "name": "IMG_9508.MOV",
+      "mimeType": "video/quicktime",
+      "sizeBytes": 38205154,
+      "captureTime": "2026-04-28 00:51:54",
+      "captureOffset": "-0700",
+      "captureSource": "quicktime-creationdate",
+      "durationMs": 30967,
+      "device": "Apple iPhone 15 Pro Max",
+      "location": "+34.1555-118.4540+203.299/"
+    },
+    {
+      "id": "1y2hgLVNxYfk0inXe_K34x-6ccLvruz5b",
+      "name": "IMG_0054.MOV",
+      "mimeType": "video/quicktime",
+      "sizeBytes": 142082081,
+      "captureTime": "2026-06-09 00:24:11",
+      "captureOffset": "-0700",
+      "captureSource": "quicktime-creationdate",
+      "durationMs": 73035,
+      "device": "Apple iPhone 15 Pro Max",
+      "location": "+34.1554-118.4541+202.184/"
+    },
+    {
+      "id": "1542LiNdwESSPQLtYu7LTSaYqW0zpMu01",
+      "name": "IMG_0477.MOV",
+      "mimeType": "video/quicktime",
+      "sizeBytes": 29838472,
+      "captureTime": "2026-07-14 21:25:57",
+      "captureOffset": "-0700",
+      "captureSource": "quicktime-creationdate",
+      "durationMs": 14640,
+      "device": "Apple iPhone 15 Pro Max",
+      "location": "+34.1555-118.4540+206.703/"
+    },
+    {
+      "id": "1-duW2FUs6kCbGX7vS-i83GLb6nePuebu",
+      "name": "IMG_0479.MOV",
+      "mimeType": "video/quicktime",
+      "sizeBytes": 16705699,
+      "captureTime": "2026-07-14 21:27:24",
+      "captureOffset": "-0700",
+      "captureSource": "quicktime-creationdate",
+      "durationMs": 10772,
+      "device": "Apple iPhone 15 Pro Max",
+      "location": "+34.1555-118.4540+203.979/"
+    },
+    {
+      "id": "1nxyltJeaQkpMiifZHuDngskvgKP74Yp3",
+      "name": "IMG_0482.MOV",
+      "mimeType": "video/quicktime",
+      "sizeBytes": 198995010,
+      "captureTime": "2026-07-14 21:32:50",
+      "captureOffset": "-0700",
+      "captureSource": "quicktime-creationdate",
+      "durationMs": 21070,
+      "device": "Apple iPhone 15 Pro Max",
+      "location": "+34.1555-118.4541+206.703/"
+    },
+    {
+      "id": "1GxiHRImiJIaiJfRDI8B3ePz3149BmKJx",
+      "name": "IMG_0825.MOV",
+      "mimeType": "video/quicktime",
+      "sizeBytes": 639941845,
+      "captureTime": "2026-08-19 03:20:23",
+      "captureOffset": "-0700",
+      "captureSource": "quicktime-creationdate",
+      "durationMs": 48168,
+      "device": "Apple iPhone 15 Pro Max",
+      "location": "+34.1555-118.4540+208.185/"
+    }
+  ],
+  "discarded": []
+}

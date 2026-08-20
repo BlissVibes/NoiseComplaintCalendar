@@ -966,3 +966,18 @@ h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.02em; }
 }
 
 @media print { .sync-panel { display: none !important; } }
+
+.sync-hint.is-warn { color: #ffc48a; }
+
+.sync-code {
+  display: inline-block;
+  margin: 8px 0;
+  padding: 7px 11px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: #7ee787;
+  user-select: all;
+}

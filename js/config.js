@@ -82,7 +82,10 @@ window.NCC_CONFIG = {
   // "filename" is first on purpose: uploading a video to Drive resets its
   // Drive creation date to the upload time, which destroys the real capture
   // time. Phone and camera filenames almost always preserve it.
-  timestampPriority: ['filename', 'media', 'driveCreated', 'driveModified'],
+  // 'capture' is the camera's own recorded time, extracted from the video
+  // file by tools/scan-drive-folder.mjs. It is first because it is the only
+  // source that is both precise and immune to renaming or re-uploading.
+  timestampPriority: ['capture', 'filename', 'media', 'driveCreated', 'driveModified'],
 
   /* ---------------------------------------------------------------
    * 4. HEATMAP TUNING

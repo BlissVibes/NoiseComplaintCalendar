@@ -48,7 +48,41 @@ need to.
 The site reads one file: `data/incidents.json`. Until you create it, the page
 falls back to bundled sample data so you can see how it looks.
 
-### Option A — read the folder automatically (recommended)
+### Option A — scan the folder (recommended, no API key)
+
+```bash
+node tools/scan-drive-folder.mjs
+git add data/incidents.json && git commit -m "Update incidents" && git push
+```
+
+That is the whole thing. No Google Cloud project, no API key, no setup — it
+works on any folder shared as **Anyone with the link → Viewer**.
+
+It reads each recording's **own capture time** out of the video file, because
+the filename usually cannot be trusted: an iPhone names its clips
+`IMG_0477.MOV`, which contains no date at all. The real time is stored inside
+the file as `com.apple.quicktime.creationdate`, in local wall-clock time with
+the offset the phone was set to — the moment as you experienced it.
+
+It only reads the few megabytes holding that metadata, using HTTP range
+requests, so a 640 MB recording costs about a 3 MB download.
+
+**Anything without a trustworthy capture time is discarded, not guessed at.**
+A converted or re-encoded clip normally has its metadata stripped, and its
+only remaining date is when it was uploaded. Plotting that would put a false
+incident on the calendar, which is worse than leaving it out. Discards are
+listed when the scan finishes and recorded in the `discarded` field of
+`data/incidents.json`.
+
+If a file is discarded but you still have the original, re-upload it without
+converting and the capture time comes back. Otherwise add a `captureTime` by
+hand:
+
+```json
+{ "id": "1AbC…", "name": "IMG_0825.MOV", "captureTime": "2026-08-19 03:20:23" }
+```
+
+### Option B — the Drive API (only if you need Drive's own fields)
 
 One-time setup, about five minutes and free:
 
@@ -102,7 +136,7 @@ commits `data/incidents.json` for you. It also runs weekly on Mondays; delete
 the `schedule:` block in `.github/workflows/update-incidents.yml` if you would
 rather it only ever run when you press the button.
 
-### Option B — paste share links, no API key
+### Option C — paste share links
 
 Make a text file with one recording per line, filename and share link
 separated by a tab or comma:
@@ -138,17 +172,25 @@ So sources are tried in this order (configurable in `js/config.js`):
 
 | Priority | Source | Confidence |
 | --- | --- | --- |
-| 1 | Capture time parsed from the **filename** | High |
-| 2 | Embedded **EXIF** metadata (images) | High |
-| 3 | Drive **upload** date | Low — flagged with a warning in the UI |
-| 4 | Drive **modified** date | Low — flagged with a warning in the UI |
+| 1 | **Camera metadata** inside the file (`com.apple.quicktime.creationdate`) | High |
+| 2 | Capture time parsed from the **filename** | High |
+| 3 | Embedded **EXIF** metadata (images) | High |
+| 4 | Drive **upload** date | Low — flagged with a warning in the UI |
+| 5 | Drive **modified** date | Low — flagged with a warning in the UI |
 
 Recognised filename formats include `PXL_20250523_225601123.mp4` (Pixel),
 `VID_20250523_225601.mp4`, `20250523_225601.mp4`,
 `2025-05-23 22.56.01.mov` (iPhone/QuickTime),
 `Screen Recording 2025-05-23 at 10.56.01 PM.mov`, and Ring/Nest-style names.
 
-**Do not rename your files.** The original camera filename is the evidence.
+**Do not convert or re-encode your recordings.** Renaming is survivable now
+that the capture time is read from inside the file, but converting strips that
+metadata and the real time is gone for good.
+
+The in-page "Check Drive" button will tell you when new files exist, but it
+will refuse to add them to the calendar when their dates cannot be trusted —
+a browser cannot read inside the video files, so it would only have the upload
+date to offer. It points you at the scanner instead.
 
 Anything falling back to a Drive date is labelled "Drive upload date" on the
 incident card with an amber warning, so you are never presenting an upload
@@ -219,7 +261,9 @@ js/incidents.js                  incident model, quiet hours, heat scoring
 js/data.js                       the single data-loading seam
 js/ui.js                         rendering
 js/app.js                        state and event wiring
-tools/fetch-drive-metadata.mjs   Drive folder  -> data/incidents.json
+tools/scan-drive-folder.mjs      Drive folder  -> data/incidents.json (no key)
+tools/lib/qtmeta.mjs             QuickTime/MP4 capture-time reader
+tools/fetch-drive-metadata.mjs   Drive API variant (needs a key)
 tools/parse-drive-links.mjs      pasted links  -> data/incidents.json
 js/sync.js                       the in-page "Check Drive" scanner
 .github/workflows/               scheduled + manual Drive refresh

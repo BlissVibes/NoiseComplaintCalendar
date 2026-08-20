@@ -3,7 +3,7 @@
 A running tally of how many AI tokens it has taken to build this site, because
 it is genuinely funny to know.
 
-**Running total: 200,385 tokens** across 5 sessions. Last updated 2026-08-19.
+**Running total: 244,385 tokens** across 6 sessions. Last updated 2026-08-20.
 
 | # | Date | Work | Tokens | Cumulative |
 | --- | --- | --- | --- | --- |
@@ -12,6 +12,7 @@ it is genuinely funny to know.
 | 3 | 2026-08-19 | Pin incident times to the record's own time zone so they never shift with the viewer | 16,000 | 168,385 |
 | 4 | 2026-08-19 | Show the raw scraped timestamp verbatim on each card and in the CSV | 9,000 | 177,385 |
 | 5 | 2026-08-19 | Drive rescan: in-page Check Drive button, GitHub Action, real folder ID wired in | 23,000 | 200,385 |
+| 6 | 2026-08-20 | Real data: QuickTime capture-time extraction, keyless folder scanner, discard untrustworthy dates | 44,000 | 244,385 |
 
 ## How to add an entry
 

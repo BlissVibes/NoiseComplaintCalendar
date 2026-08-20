@@ -284,39 +284,75 @@
     }
     dom.results.appendChild(list);
 
+    // The Drive API returns file listings, not what is inside the files. For a
+    // recording whose real capture time lives in its QuickTime metadata (every
+    // iPhone clip, since IMG_1234.MOV carries no date), the browser cannot
+    // reach it, and the only date on offer is the Drive upload date. Plotting
+    // that would put the incident on the day it was uploaded. So the merge and
+    // download are offered only when every new file has a date we can actually
+    // trust from its name alone.
+    var trustworthy = fresh.every(function (file) {
+      var r = global.NCCTimestamps.resolve(
+        file, global.NCC_CONFIG.timestampPriority, global.NCC_CONFIG.recordTimeZone);
+      return r && r.confidence === 'high';
+    });
+
     var actions = document.createElement('div');
     actions.className = 'sync-actions';
 
-    var add = document.createElement('button');
-    add.type = 'button';
-    add.className = 'btn btn-primary';
-    add.textContent = 'Show on calendar now';
-    add.addEventListener('click', function () {
-      hooks.applyRaw(found.all);
-      status('Showing the folder’s ' + found.all.length + ' recordings, jumped ' +
-        'to the newest. This is temporary — reload and you are back to the ' +
-        'committed data, so download the file below and commit it to keep it.',
-        'ok');
-      dom.results.innerHTML = '';
-    });
-    actions.appendChild(add);
+    if (trustworthy) {
+      var add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'btn btn-primary';
+      add.textContent = 'Show on calendar now';
+      add.addEventListener('click', function () {
+        hooks.applyRaw(found.all);
+        status('Showing the folder’s ' + found.all.length + ' recordings, ' +
+          'jumped to the newest. This is temporary — reload and you are back ' +
+          'to the committed data, so download the file below and commit it.',
+          'ok');
+        dom.results.innerHTML = '';
+      });
+      actions.appendChild(add);
 
-    var dl = document.createElement('button');
-    dl.type = 'button';
-    dl.className = 'btn';
-    dl.textContent = 'Download incidents.json';
-    dl.addEventListener('click', download);
-    actions.appendChild(dl);
+      var dl = document.createElement('button');
+      dl.type = 'button';
+      dl.className = 'btn';
+      dl.textContent = 'Download incidents.json';
+      dl.addEventListener('click', download);
+      actions.appendChild(dl);
+      dom.results.appendChild(actions);
 
-    dom.results.appendChild(actions);
+      var hint = document.createElement('p');
+      hint.className = 'sync-hint';
+      hint.textContent =
+        'To make this permanent for everyone, put the downloaded file at ' +
+        'data/incidents.json and commit it.';
+      dom.results.appendChild(hint);
+      return;
+    }
 
-    var hint = document.createElement('p');
-    hint.className = 'sync-hint';
-    hint.textContent =
-      'To make this permanent for everyone, put the downloaded file at ' +
-      'data/incidents.json and commit it. The GitHub Action in this repo can ' +
-      'do the same thing without any of this — see the README.';
-    dom.results.appendChild(hint);
+    var warn = document.createElement('p');
+    warn.className = 'sync-hint is-warn';
+    warn.textContent =
+      'These filenames carry no date, so their real capture time is inside ' +
+      'the video files themselves and a browser cannot read it. Adding them ' +
+      'from here would date them to when they were uploaded, not when they ' +
+      'happened. Run this instead — it reads each file’s own recorded time ' +
+      'and needs no API key:';
+    dom.results.appendChild(warn);
+
+    var code = document.createElement('code');
+    code.className = 'sync-code';
+    code.textContent = 'node tools/scan-drive-folder.mjs';
+    dom.results.appendChild(code);
+
+    var also = document.createElement('p');
+    also.className = 'sync-hint';
+    also.textContent =
+      'Then commit data/incidents.json. The GitHub Action in this repo runs ' +
+      'the same command for you — see the README.';
+    dom.results.appendChild(also);
   }
 
   /* The download is byte-compatible with tools/fetch-drive-metadata.mjs. */

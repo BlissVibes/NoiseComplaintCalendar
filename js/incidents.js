@@ -145,6 +145,8 @@
         : (raw.durationMs || null),
       sizeBytes: raw.size ? Number(raw.size) : (raw.sizeBytes || null),
       mimeType: raw.mimeType || '',
+      device: raw.device || null,
+      captureOffset: raw.captureOffset || null,
       note: raw.note || '',
       previewUrl: id ? previewUrl(id) : null,
       viewUrl: id ? viewUrl(id) : (raw.link || null),
