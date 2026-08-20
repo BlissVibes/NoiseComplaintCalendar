@@ -2,12 +2,18 @@
 /*
  * scan-drive-folder.mjs — build data/incidents.json from a shared Drive folder.
  *
- * No API key, no Google Cloud project. It uses two public endpoints that work
- * for any folder shared as "Anyone with the link":
+ * Listing the folder works two ways, and the scan picks whichever is available:
  *
- *   1. embeddedfolderview  — lists the file IDs and names in the folder.
- *   2. usercontent download with an HTTP Range header — pulls only the few MB
- *      holding the moov atom, so a 640 MB recording costs a ~3 MB read.
+ *   public (default)  embeddedfolderview, which needs no API key at all and
+ *                     works for any folder shared "Anyone with the link".
+ *   api               Drive's files.list, used when an API key is supplied.
+ *                     Slower to set up but it pages properly, walks
+ *                     subfolders, and returns Drive's own fields.
+ *
+ * Either way the capture time comes from the same place — inside the video —
+ * read with an HTTP Range request that pulls only the few MB holding the moov
+ * atom, so a 640 MB recording costs a ~3 MB read. Switching listing method
+ * never changes a timestamp.
  *
  * Why it reads the files at all: iPhone names recordings IMG_1234.MOV, which
  * contains no date. The real capture time is inside the file, in
@@ -24,6 +30,8 @@
  *   node tools/scan-drive-folder.mjs --folder <ID|URL>
  *   node tools/scan-drive-folder.mjs --out data/incidents.json
  *   node tools/scan-drive-folder.mjs --keep-untrusted    # include discards
+ *   node tools/scan-drive-folder.mjs --key <API_KEY>     # list via Drive API
+ *   node tools/scan-drive-folder.mjs --method public     # force either mode
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -64,6 +72,17 @@ const folderIds = (arg('folder') || folderFromConfig() || '')
   .filter(Boolean);
 const folderId = folderIds[0];
 const outPath = resolve(ROOT, arg('out') || 'data/incidents.json');
+
+/* A key is optional. Given one, listing goes through the Drive API; without,
+ * through the public folder view. --method forces either regardless. */
+const apiKey = arg('key') || process.env.DRIVE_API_KEY || null;
+const methodForced = !!arg('method');
+let method = arg('method') || (apiKey ? 'api' : 'public');
+
+if (method === 'api' && !apiKey) {
+  console.error('--method api needs --key <API_KEY> or the DRIVE_API_KEY env var.');
+  process.exit(1);
+}
 const RANGE = 3_000_000;      // bytes of moov to pull per attempt
 const BIG_RANGE = 16_000_000; // retry span when moov sits further in
 
@@ -75,6 +94,50 @@ if (!folderIds.length) {
 /* ---------- 1. list the folder ---------- */
 
 async function listFolder(id) {
+  return method === 'api' ? listFolderApi(id) : listFolderPublic(id);
+}
+
+/* Drive's own listing. Pages through results and walks subfolders, so a
+ * folder-per-month layout works and a large folder is never truncated. */
+async function listFolderApi(id) {
+  const out = [];
+  let pageToken;
+
+  do {
+    const params = new URLSearchParams({
+      q: `'${id}' in parents and trashed = false`,
+      key: apiKey,
+      fields: 'nextPageToken,files(id,name,mimeType,size,createdTime)',
+      pageSize: '1000',
+      orderBy: 'name',
+      supportsAllDrives: 'true',
+      includeItemsFromAllDrives: 'true',
+    });
+    if (pageToken) params.set('pageToken', pageToken);
+
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?${params}`);
+    const json = await res.json();
+    if (!res.ok) {
+      throw new Error(
+        `Drive API: ${json?.error?.message || 'HTTP ' + res.status}`
+      );
+    }
+    for (const file of json.files || []) {
+      if (file.mimeType === 'application/vnd.google-apps.folder') {
+        out.push(...await listFolderApi(file.id));
+      } else {
+        out.push({ id: file.id, name: file.name, driveSize: Number(file.size) || null });
+      }
+    }
+    pageToken = json.nextPageToken;
+  } while (pageToken);
+
+  return out;
+}
+
+/* The keyless listing. It returns one flat page, so a very large folder can
+ * come back short — worth saying so rather than silently under-reporting. */
+async function listFolderPublic(id) {
   const res = await fetch(
     `https://drive.google.com/embeddedfolderview?id=${id}#list`
   );
@@ -89,7 +152,15 @@ async function listFolder(id) {
   const names = [...html.matchAll(/flip-entry-title">([^<]*)<\/div>/g)].map((m) =>
     m[1].replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"')
   );
-  return ids.map((fileId, i) => ({ id: fileId, name: names[i] || fileId }));
+  const listed = ids.map((fileId, i) => ({ id: fileId, name: names[i] || fileId }));
+  if (listed.length >= 100) {
+    console.warn(
+      `  ! ${listed.length} items returned by the keyless listing. That endpoint ` +
+      `does not page,\n    so a larger folder may be cut short. Re-run with ` +
+      `--key <API_KEY> to be certain.`
+    );
+  }
+  return listed;
 }
 
 /* ---------- 2. read each file's metadata over HTTP Range ---------- */
@@ -166,6 +237,13 @@ function classify(meta) {
   return { keep: false, reason: 'no capture time in metadata' };
 }
 
+/* Any failure from here on is an operational problem — a folder that is not
+ * shared, a key without the API enabled — not a bug worth a stack trace. */
+process.on('uncaughtException', (err) => {
+  console.error(`\n${err.message}`);
+  process.exit(1);
+});
+
 /* ---------- run ---------- */
 
 /* Independent check on the metadata. When the filename also carries a date —
@@ -181,10 +259,25 @@ function filenameDate(name) {
   return `${m[3]}-${m[1]}-${m[2]} ${String(hour).padStart(2, '0')}:${m[5]}`;
 }
 
+/* Listing is the only step the two methods differ on, so a key that turns out
+ * to be wrong should not sink the whole scan — unless the method was asked for
+ * explicitly, in which case silently doing something else would be worse. */
+async function listWithFallback(id) {
+  try {
+    return await listFolder(id);
+  } catch (err) {
+    if (methodForced || method !== 'api') throw err;
+    console.warn(`  ! Drive API listing failed: ${err.message.split('\n')[0]}`);
+    console.warn('    Falling back to the keyless public listing.');
+    method = 'public';
+    return listFolder(id);
+  }
+}
+
 const entries = [];
 for (const id of folderIds) {
-  console.log(`Reading folder ${id} …`);
-  const found = await listFolder(id);
+  console.log(`Reading folder ${id} (${method} listing) …`);
+  const found = await listWithFallback(id);
   // Later folders never displace an entry already seen.
   for (const e of found) {
     if (!entries.some((x) => x.id === e.id)) entries.push(e);
@@ -319,6 +412,7 @@ writeFileSync(
       folderId,
       folderIds,
       source: 'quicktime-metadata',
+      listing: method,
       mismatches,
       duplicates,
       files: flag('keep-untrusted') ? [...kept, ...discarded] : kept,

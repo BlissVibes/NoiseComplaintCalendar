@@ -1,20 +1,33 @@
-# Regenerates data/incidents.json from the Drive folder and commits it.
+# Regenerates data/incidents.json from the Drive folder(s) and commits it.
 #
 # Run it from the Actions tab ("Run workflow"), which is the button-press
 # version of this, or let the weekly schedule pick up new uploads on its own.
 #
-# One-time setup:
-#   Settings -> Secrets and variables -> Actions -> New repository secret
-#     Name:  DRIVE_API_KEY
-#     Value: your Google Drive API key
+# NO SETUP IS REQUIRED. By default it uses the keyless scanner, which reads a
+# link-shared folder through Drive's public folder view. Capture times come
+# from inside the recordings either way, so the calendar is correct without a
+# Google Cloud project existing at all.
 #
-# The key lives in the secret store and never appears in the repo or on the
-# published page.
+# Optional: add a DRIVE_API_KEY repository secret
+# (Settings -> Secrets and variables -> Actions) and listing switches to the
+# Drive API, which pages properly and walks subfolders. Worth doing only once
+# the folder is large enough that the keyless listing might come back short —
+# the scan warns when that becomes a risk.
 
 name: Update incidents from Drive
 
 on:
-  workflow_dispatch:        # the manual "scan now" button
+  workflow_dispatch:
+    inputs:
+      method:
+        description: 'How to list the folder'
+        required: false
+        default: auto
+        type: choice
+        options:
+          - auto      # Drive API if DRIVE_API_KEY is set, else keyless
+          - public    # force the keyless listing
+          - api       # force the Drive API (fails if no key)
   schedule:
     - cron: '17 14 * * 1'   # Mondays, 14:17 UTC (~6-7am Los Angeles)
 
@@ -37,16 +50,29 @@ jobs:
 
       - name: Scan the Drive folder
         env:
+          # Absent secret is fine — the scanner falls back to the keyless path.
           DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
-          # Defaults to the folder in js/config.js; override with a repo
-          # variable named DRIVE_FOLDER_ID if the folder ever changes.
-          DRIVE_FOLDER_ID: ${{ vars.DRIVE_FOLDER_ID || '1cqwh37XHMl3SDeX8B_itFA4baokielha' }}
+          # Defaults to the folder(s) in js/config.js. A repository variable
+          # named DRIVE_FOLDER_ID overrides it; comma-separate to merge several.
+          DRIVE_FOLDER_ID: ${{ vars.DRIVE_FOLDER_ID }}
+          METHOD: ${{ inputs.method || 'auto' }}
         run: |
-          if [ -z "$DRIVE_API_KEY" ]; then
-            echo "::error::DRIVE_API_KEY secret is not set. See the comment at the top of this file."
-            exit 1
+          # Full if-blocks, not "[ test ] && cmd": these run under bash -e, so a
+          # test that is simply false would end the step with a non-zero status.
+          args=()
+          if [ -n "$DRIVE_FOLDER_ID" ]; then
+            args+=(--folder "$DRIVE_FOLDER_ID")
           fi
-          node tools/fetch-drive-metadata.mjs
+          # "auto" is the scanner's own default, so only pass an explicit choice.
+          if [ "$METHOD" != "auto" ]; then
+            args+=(--method "$METHOD")
+          fi
+          if [ -n "$DRIVE_API_KEY" ]; then
+            echo "Listing via the Drive API (DRIVE_API_KEY is set)."
+          else
+            echo "Listing via the keyless public folder view."
+          fi
+          node tools/scan-drive-folder.mjs "${args[@]}"
 
       - name: Commit if anything changed
         run: |

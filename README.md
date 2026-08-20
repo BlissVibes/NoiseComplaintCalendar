@@ -72,6 +72,18 @@ requests, so a 640 MB recording costs about a 3 MB download.
 the file's own metadata and reports any disagreement. Two independent sources
 agreeing is worth a great deal if this record is ever questioned.
 
+**Two ways to list the folder.** The scanner defaults to the keyless public
+view. Give it a key — `--key <API_KEY>`, or a `DRIVE_API_KEY` environment
+variable — and it lists through the Drive API instead, which pages properly
+and walks subfolders. `--method public` or `--method api` forces either.
+
+This only affects listing. Capture times are read from inside the files in
+both cases, so the two produce identical timestamps. The keyless view returns
+a single unpaged response, so the scan warns if a folder is large enough that
+the listing might be cut short; that is the point at which a key is worth
+adding. If a key is present but rejected, the scan says so and falls back to
+the keyless listing rather than failing — unless you forced `--method api`.
+
 **Several folders.** Pass them comma-separated, or list them in
 `driveFolderId`, and they are merged. A recording present in more than one
 folder is counted once, matched on capture time rather than file ID, since
@@ -143,12 +155,15 @@ The key is stored in your browser's localStorage, never in the page source, so
 visitors to the public URL cannot see or use it, and the panel does nothing for
 them. "Forget saved key" clears it.
 
-**The GitHub Action**, which needs no key in any browser. Add your key once at
-Settings → Secrets and variables → Actions as `DRIVE_API_KEY`, then hit
-Actions → "Update incidents from Drive" → Run workflow. It regenerates and
-commits `data/incidents.json` for you. It also runs weekly on Mondays; delete
-the `schedule:` block in `.github/workflows/update-incidents.yml` if you would
+**The GitHub Action**, which needs no setup at all. Actions → "Update
+incidents from Drive" → Run workflow, and it regenerates and commits
+`data/incidents.json` for you. It also runs weekly on Mondays; delete the
+`schedule:` block in `.github/workflows/update-incidents.yml` if you would
 rather it only ever run when you press the button.
+
+It runs the same scanner as Option A, so capture times come from inside the
+recordings whether or not a key exists. Adding a `DRIVE_API_KEY` secret only
+changes how the folder is *listed*, never a timestamp.
 
 ### Option C — paste share links
 
