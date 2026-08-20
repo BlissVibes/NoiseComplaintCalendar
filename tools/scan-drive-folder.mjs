@@ -56,12 +56,18 @@ function normalizeFolderId(value) {
   return (m ? m[1] : String(value).trim()) || null;
 }
 
-const folderId = normalizeFolderId(arg('folder')) || folderFromConfig();
+/* Accepts one folder, or several comma-separated, so an older folder can be
+ * merged in rather than losing the incidents it holds. */
+const folderIds = (arg('folder') || folderFromConfig() || '')
+  .split(',')
+  .map((v) => normalizeFolderId(v.trim()))
+  .filter(Boolean);
+const folderId = folderIds[0];
 const outPath = resolve(ROOT, arg('out') || 'data/incidents.json');
 const RANGE = 3_000_000;      // bytes of moov to pull per attempt
 const BIG_RANGE = 16_000_000; // retry span when moov sits further in
 
-if (!folderId) {
+if (!folderIds.length) {
   console.error('No folder. Pass --folder <ID or URL>, or set driveFolderId in js/config.js.');
   process.exit(1);
 }
@@ -162,10 +168,32 @@ function classify(meta) {
 
 /* ---------- run ---------- */
 
-console.log(`Reading folder ${folderId} …`);
-const entries = await listFolder(folderId);
+/* Independent check on the metadata. When the filename also carries a date —
+ * as Apple's "IMG_0040 - 06-07-2026 12.50 AM.mov" exports do — the two should
+ * agree. A disagreement means one of them is wrong, which is exactly the case
+ * worth surfacing rather than silently trusting. */
+function filenameDate(name) {
+  const m = /(\d{2})-(\d{2})-(\d{4})[\s_]+(\d{1,2})[.:_](\d{2})\s*([AaPp])\.?[Mm]\.?/
+    .exec(name);
+  if (!m) return null;
+  let hour = Number(m[4]) % 12;
+  if (/[Pp]/.test(m[6])) hour += 12;
+  return `${m[3]}-${m[1]}-${m[2]} ${String(hour).padStart(2, '0')}:${m[5]}`;
+}
+
+const entries = [];
+for (const id of folderIds) {
+  console.log(`Reading folder ${id} …`);
+  const found = await listFolder(id);
+  // Later folders never displace an entry already seen.
+  for (const e of found) {
+    if (!entries.some((x) => x.id === e.id)) entries.push(e);
+  }
+}
 const media = entries.filter((e) => MEDIA.test(e.name));
 console.log(`${entries.length} item(s), ${media.length} playable.\n`);
+
+const mismatches = [];
 
 const kept = [];
 const discarded = [];
@@ -207,10 +235,56 @@ for (const entry of media) {
     device: [meta.make, meta.model].filter(Boolean).join(' ') || null,
     location: meta.location || null,
   });
-  console.log(`${verdict.captureTime}  ${verdict.captureOffset || ''}`);
+  const claimed = filenameDate(entry.name);
+  if (claimed && claimed !== verdict.captureTime.slice(0, 16)) {
+    mismatches.push({
+      name: entry.name,
+      filename: claimed,
+      metadata: verdict.captureTime.slice(0, 16),
+    });
+    console.log(`${verdict.captureTime}  ⚠ filename says ${claimed}`);
+  } else {
+    console.log(`${verdict.captureTime}  ${verdict.captureOffset || ''}` +
+      (claimed ? '  (filename agrees)' : ''));
+  }
 }
 
+/* The same recording can appear in more than one folder — re-uploaded under a
+ * new name, so it has a different Drive ID and the ID-based dedupe above
+ * misses it. Capture time to the second is what actually identifies a
+ * recording. Prefer the copy whose filename carries a date, since that one
+ * can be cross-checked against its own metadata. */
+function dedupeByCaptureTime(list) {
+  const best = new Map();
+  const dropped = [];
+  for (const item of list) {
+    const key = item.captureTime;
+    const existing = best.get(key);
+    if (!existing) {
+      best.set(key, item);
+      continue;
+    }
+    const incomingChecked = !!filenameDate(item.name);
+    const existingChecked = !!filenameDate(existing.name);
+    if (incomingChecked && !existingChecked) {
+      best.set(key, item);
+      dropped.push({ name: existing.name, duplicateOf: item.name, at: key });
+    } else {
+      dropped.push({ name: item.name, duplicateOf: existing.name, at: key });
+    }
+  }
+  return { unique: [...best.values()], dropped };
+}
+
+const { unique, dropped: duplicates } = dedupeByCaptureTime(kept);
+kept.length = 0;
+kept.push(...unique);
 kept.sort((a, b) => a.captureTime.localeCompare(b.captureTime));
+
+if (duplicates.length) {
+  console.log(`\nMerged ${duplicates.length} duplicate(s) — same recording in more than one folder:`);
+  for (const d of duplicates) console.log(`  ${d.name}  ==  ${d.duplicateOf}  (${d.at})`);
+}
 
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(
@@ -219,7 +293,10 @@ writeFileSync(
     {
       generatedAt: new Date().toISOString(),
       folderId,
+      folderIds,
       source: 'quicktime-metadata',
+      mismatches,
+      duplicates,
       files: flag('keep-untrusted') ? [...kept, ...discarded] : kept,
       discarded,
     },
@@ -229,6 +306,20 @@ writeFileSync(
 );
 
 console.log(`\nKept ${kept.length}, discarded ${discarded.length}.`);
+
+const crosschecked = kept.filter((k) => filenameDate(k.name)).length;
+if (crosschecked) {
+  console.log(
+    `${crosschecked} filename(s) also carried a date; ` +
+    `${crosschecked - mismatches.length} agreed with the file's own metadata.`
+  );
+}
+if (mismatches.length) {
+  console.log('\nMISMATCH — filename and metadata disagree, check these by hand:');
+  for (const m of mismatches) {
+    console.log(`  ${m.name}\n      filename: ${m.filename}\n      metadata: ${m.metadata}`);
+  }
+}
 if (discarded.length) {
   console.log('\nDiscarded — these carry no trustworthy capture time:');
   for (const d of discarded) console.log(`  ${d.name}: ${d.reason}`);

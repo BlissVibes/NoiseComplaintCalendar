@@ -67,6 +67,20 @@ the offset the phone was set to — the moment as you experienced it.
 It only reads the few megabytes holding that metadata, using HTTP range
 requests, so a 640 MB recording costs about a 3 MB download.
 
+**Cross-check.** When a filename also carries a date — as Apple's
+`IMG_0040 - 06-07-2026 12.50 AM.mov` exports do — the scanner compares it with
+the file's own metadata and reports any disagreement. Two independent sources
+agreeing is worth a great deal if this record is ever questioned.
+
+**Several folders.** Pass them comma-separated, or list them in
+`driveFolderId`, and they are merged. A recording present in more than one
+folder is counted once, matched on capture time rather than file ID, since
+re-uploading gives the same recording a new ID:
+
+```bash
+node tools/scan-drive-folder.mjs --folder <newFolder>,<oldFolder>
+```
+
 **Anything without a trustworthy capture time is discarded, not guessed at.**
 A converted or re-encoded clip normally has its metadata stripped, and its
 only remaining date is when it was uploaded. Plotting that would put a false

@@ -62,6 +62,18 @@
       },
     },
     {
+      // US-style export, e.g. "IMG_0040 - 06-07-2026 12.50 AM.mov".
+      // Listed after the ISO patterns so an ISO date always wins; MM-DD is
+      // assumed because that is what US devices and exporters produce.
+      name: 'us-12h',
+      re: /(\d{2})-(\d{2})-(\d{4})[\s_]+(\d{1,2})[.:_](\d{2})(?:[.:_](\d{2}))?\s*([AaPp])\.?[Mm]\.?/,
+      map: function (m) {
+        var hour = Number(m[4]) % 12;
+        if (/[Pp]/.test(m[7])) hour += 12;
+        return parts(m[3], m[1], m[2], hour, m[5], m[6]);
+      },
+    },
+    {
       // Date only, e.g. "2024-05-12.mp4". Time is unknown -> flagged below.
       name: 'iso-date-only',
       re: /(\d{4})[-_.](\d{2})[-_.](\d{2})/,
