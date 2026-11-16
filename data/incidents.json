@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09T23:27:50.561Z",
+  "generatedAt": "2026-11-16T23:25:19.259Z",
   "folderId": "1InFE4eEoLQSuesdGiKpCMgkAYgV8emms",
   "folderIds": [
     "1InFE4eEoLQSuesdGiKpCMgkAYgV8emms",
@@ -456,18 +456,6 @@
       "durationMs": 46668,
       "device": "Apple iPhone 15 Pro Max",
       "location": "+34.1555-118.4541+000.000/"
-    },
-    {
-      "id": "1GxiHRImiJIaiJfRDI8B3ePz3149BmKJx",
-      "name": "IMG_0825.MOV",
-      "mimeType": "video/quicktime",
-      "sizeBytes": 639941845,
-      "captureTime": "2026-08-19 03:20:23",
-      "captureOffset": "-0700",
-      "captureSource": "quicktime-creationdate",
-      "durationMs": 48168,
-      "device": "Apple iPhone 15 Pro Max",
-      "location": "+34.1555-118.4540+208.185/"
     }
   ],
   "discarded": []
